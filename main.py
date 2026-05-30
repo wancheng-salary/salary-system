@@ -563,7 +563,7 @@ if os.path.exists(save_file):
 save_data.to_csv(save_file, index=False, encoding="utf-8-sig")
 st.success("薪資資料已儲存成功！")
 
-    st.subheader("刪除總表紀錄")
+st.subheader("刪除總表紀錄")
 
     delete_options = [
         f"{idx}｜{row['年月']}｜{row['姓名']}｜實發 {row['實發薪資']}"
