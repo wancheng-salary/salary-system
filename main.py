@@ -538,6 +538,27 @@ if os.path.exists("salary_records.csv"):
     formatted_df = pd.DataFrame(formatted_rows)
 
     st.table(formatted_df)
+    st.subheader("簡化版總表")
+
+simple_df = summary_df[[
+    "年月", "姓名", "單位", "分組", "月薪",
+    "加班時數", "加班費", "大夜班津貼",
+    "請假扣款", "扣款總計", "應領", "實發薪資"
+]]
+
+st.table(simple_df)
+
+simple_excel = "simple_salary_summary.xlsx"
+simple_df.to_excel(simple_excel, index=False)
+
+with open(simple_excel, "rb") as file:
+    st.download_button(
+        label="下載簡化版總表 Excel",
+        data=file,
+        file_name="簡化版薪資總表.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="download_simple_salary"
+    )
 
     complex_excel = "complex_salary_summary.xlsx"
 
@@ -545,14 +566,6 @@ if os.path.exists("salary_records.csv"):
         complex_excel,
         index=False
     )
-
-    with open(complex_excel, "rb") as file:
-        st.download_button(
-            label="下載薪資總表 Excel",
-            data=file,
-            file_name="薪資總表.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
 
 with open(complex_excel, "rb") as file:
     st.download_button(
