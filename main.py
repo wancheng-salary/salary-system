@@ -555,7 +555,6 @@ if os.path.exists("salary_records.csv"):
         )
 
 with open(complex_excel, "rb") as file:
-with open(complex_excel, "rb") as file:
 st.download_button(
     label="下載薪資總表 Excel",
     data=file,
