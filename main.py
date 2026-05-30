@@ -553,7 +553,6 @@ if os.path.exists("salary_records.csv"):
             file_name="薪資總表.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-    }])
 
 save_file = "salary_records.csv"
 
