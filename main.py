@@ -554,14 +554,10 @@ if os.path.exists("salary_records.csv"):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-save_file = "salary_records.csv"
-
-if os.path.exists(save_file):
-    old_data = pd.read_csv(save_file)
-    save_data = pd.concat([old_data, save_data], ignore_index=True)
-
-save_data.to_csv(save_file, index=False, encoding="utf-8-sig")
-st.success("薪資資料已儲存成功！")
+with open(complex_excel, "rb") as file:
+    st.download_button(
+        ...
+    )
 
 st.subheader("刪除總表紀錄")
 
