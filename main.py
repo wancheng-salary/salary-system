@@ -539,7 +539,7 @@ if os.path.exists("salary_records.csv"):
 
     st.table(formatted_df)
 
-    complex_excel = "data/complex_salary_summary.xlsx"
+    complex_excel = "complex_salary_summary.xlsx"
 
     formatted_df.to_excel(
         complex_excel,
