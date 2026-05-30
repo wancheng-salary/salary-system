@@ -593,7 +593,7 @@ if len(delete_options) > 0:
              encoding="utf-8-sig"
          )
 
-        st.success("已刪除紀錄")
+         st.success("已刪除紀錄")
 
 else:
 
