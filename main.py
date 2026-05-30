@@ -236,13 +236,13 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         "實發薪資": final_salary
     }])
 
-    ave_file = "salary_records.csv"
+   save_file = "salary_records.csv"
 
-    if os.path.exists(save_file):
-        old_data = pd.read_csv(save_file)
-        save_data = pd.concat([old_data, save_data], ignore_index=True)
+if os.path.exists(save_file):
+    old_data = pd.read_csv(save_file)
+    save_data = pd.concat([old_data, save_data], ignore_index=True)
 
-    save_data.to_csv(save_file, index=False, encoding="utf-8-sig")
+save_data.to_csv(save_file, index=False, encoding="utf-8-sig")
     st.success("薪資資料已儲存成功！")
 
     group_1 = [
