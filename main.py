@@ -540,12 +540,16 @@ if os.path.exists("salary_records.csv"):
     st.table(formatted_df)
     st.subheader("簡化版總表")
 
-simple_df = summary_df[[
+imple_cols = [
     "年月", "姓名", "單位", "分組", "月薪",
     "加班時數", "加班費", "大夜班津貼",
-    "請假扣款", "扣款總計", "應領", "實發薪資"
-]]
+    "請假扣款", "勞保", "健保", "居留證",
+    "仲介費", "體檢費", "所得稅",
+    "應領", "實發薪資"
+]
 
+simple_cols = [c for c in simple_cols if c in summary_df.columns]
+simple_df = summary_df[simple_cols]
 st.table(simple_df)
 
 simple_excel = "simple_salary_summary.xlsx"
