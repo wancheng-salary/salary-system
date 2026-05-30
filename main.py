@@ -427,10 +427,10 @@ def get_group(employee_name):
 
 st.subheader("所有員工薪資總表")
 
-if os.path.exists("data/salary_records.csv"):
+if os.path.exists("salary_records.csv"):
 
     history_df = pd.read_csv(
-        "data/salary_records.csv",
+        "salary_records.csv",
         encoding="utf-8-sig"
     )
 
@@ -579,7 +579,7 @@ if os.path.exists("data/salary_records.csv"):
             )
 
             history_df.to_csv(
-                "data/salary_records.csv",
+                "salary_records.csv",
                 index=False,
                 encoding="utf-8-sig"
             )
