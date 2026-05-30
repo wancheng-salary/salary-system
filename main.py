@@ -8,7 +8,7 @@ import os
 
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
 
-employees_df = pd.read_csv("data/employees.csv", encoding="utf-8")
+employees_df = pd.read_csv("employees.csv", encoding="utf-8")
 
 unit_list = ["全部"] + sorted(employees_df["單位"].dropna().unique().tolist())
 selected_unit = st.selectbox("選擇單位 / Chọn bộ phận", unit_list)
