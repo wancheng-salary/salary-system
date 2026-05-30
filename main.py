@@ -565,35 +565,35 @@ st.success("薪資資料已儲存成功！")
 
 st.subheader("刪除總表紀錄")
 
-    delete_options = [
-        f"{idx}｜{row['年月']}｜{row['姓名']}｜實發 {row['實發薪資']}"
-        for idx, row in summary_df.iterrows()
-    ]
+delete_options = [
+    f"{idx}｜{row['年月']}｜{row['姓名']}｜實發 {row['實發薪資']}"
+     for idx, row in summary_df.iterrows()
+]
 
-    if len(delete_options) > 0:
+if len(delete_options) > 0:
 
-        delete_choice = st.selectbox(
-            "選擇要刪除的紀錄",
-            delete_options
+    delete_choice = st.selectbox(
+        "選擇要刪除的紀錄",
+        delete_options
+    )
+
+    if st.button("刪除選取紀錄"):
+
+         delete_index = int(
+            delete_choice.split("｜")[0]
         )
 
-        if st.button("刪除選取紀錄"):
+         history_df = history_df.drop(
+            index=delete_index
+         )
 
-            delete_index = int(
-                delete_choice.split("｜")[0]
-            )
+         history_df.to_csv(
+             "salary_records.csv",
+            index=False,
+             encoding="utf-8-sig"
+         )
 
-            history_df = history_df.drop(
-                index=delete_index
-            )
-
-            history_df.to_csv(
-                "salary_records.csv",
-                index=False,
-                encoding="utf-8-sig"
-            )
-
-            st.success("已刪除紀錄")
+        st.success("已刪除紀錄")
 
 else:
 
