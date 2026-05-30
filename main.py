@@ -559,8 +559,9 @@ with open(complex_excel, "rb") as file:
         label="下載薪資總表 Excel",
         data=file,
         file_name="薪資總表.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="download_complex_salary"
+    )
 
 st.subheader("刪除總表紀錄")
 
