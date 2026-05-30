@@ -555,8 +555,12 @@ if os.path.exists("salary_records.csv"):
         )
 
 with open(complex_excel, "rb") as file:
-    st.download_button(
-        ...
+with open(complex_excel, "rb") as file:
+st.download_button(
+    label="下載薪資總表 Excel",
+    data=file,
+    file_name="薪資總表.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 st.subheader("刪除總表紀錄")
