@@ -5,10 +5,6 @@ import calendar
 from datetime import date
 import math
 import os
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
 
