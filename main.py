@@ -236,7 +236,7 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         "實發薪資": final_salary
     }])
 
-    save_file = "data/salary_records.csv"
+    ave_file = "salary_records.csv"
 
     if os.path.exists(save_file):
         old_data = pd.read_csv(save_file)
