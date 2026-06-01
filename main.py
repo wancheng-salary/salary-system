@@ -537,9 +537,6 @@ if os.path.exists("salary_records.csv"):
 
     formatted_df = pd.DataFrame(formatted_rows)
 
-st.write("formatted_df建立成功")
-st.write(formatted_df.head())
-
 st.table(formatted_df)
 st.subheader("簡化版總表")
 
