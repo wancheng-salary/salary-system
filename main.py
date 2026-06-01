@@ -538,7 +538,7 @@ formatted_rows.append({
     "應領": row["應領"],
     "實發薪資": row["實發薪資"]
 })
-    formatted_df = pd.DataFrame(formatted_rows)
+formatted_df = pd.DataFrame(formatted_rows)
 
 st.table(formatted_df)
 st.subheader("簡化版總表")
