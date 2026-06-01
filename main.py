@@ -5,6 +5,9 @@ import calendar
 from datetime import date
 import math
 import os
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
 
