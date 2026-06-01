@@ -540,8 +540,8 @@ if os.path.exists("salary_records.csv"):
 st.write("formatted_df建立成功")
 st.write(formatted_df.head())
 
-    st.table(formatted_df)
-    st.subheader("簡化版總表")
+st.table(formatted_df)
+st.subheader("簡化版總表")
 
 simple_cols = [
     "年月", "姓名", "單位", "分組", "月薪",
