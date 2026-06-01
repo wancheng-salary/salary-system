@@ -540,7 +540,7 @@ if os.path.exists("salary_records.csv"):
     st.table(formatted_df)
     st.subheader("簡化版總表")
 
-imple_cols = [
+simple_cols = [
     "年月", "姓名", "單位", "分組", "月薪",
     "加班時數", "加班費", "大夜班津貼",
     "請假扣款", "勞保", "健保", "居留證",
