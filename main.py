@@ -504,6 +504,12 @@ total_deduct = (
     + row["體檢費"]
     + row["所得稅"]
 )
+formatted_rows.append({
+    "年月": row["年月"],
+    "姓名": row["姓名"],
+    "單位": row["單位"],
+    "分組": row["分組"],
+    "月薪": row["月薪"],
 
 "46小時內加班時數": normal_under_46,
 "46小時內加班費": normal_under_46_pay,
