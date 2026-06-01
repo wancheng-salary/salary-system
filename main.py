@@ -548,8 +548,8 @@ simple_cols = [
     "應領", "實發薪資"
 ]
 
-simple_cols = [c for c in simple_cols if c in formatted_df.columns]
-simple_df = formatted_df[simple_cols]
+simple_cols = [c for c in simple_cols if c in summary_df.columns]
+simple_df = summary_df[simple_cols]
 st.table(simple_df)
 
 simple_excel = "simple_salary_summary.xlsx"
