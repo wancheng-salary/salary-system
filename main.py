@@ -511,17 +511,17 @@ formatted_rows.append({
     "分組": row["分組"],
     "月薪": row["月薪"],
 
-"46小時內加班時數": normal_under_46,
-"46小時內加班費": normal_under_46_pay,
+    "46小時內加班時數": normal_under_46,
+    "46小時內加班費": normal_under_46_pay,
 
-"46小時內國定假日時數": holiday_under_46,
-"46小時內國定假日加班費": holiday_under_46_pay,
+    "46小時內國定假日時數": holiday_under_46,
+    "46小時內國定假日加班費": holiday_under_46_pay,
 
-"超出46小時加班時數": normal_over_46,
-"超出46小時加班費": normal_over_46_pay,
+    "超出46小時加班時數": normal_over_46,
+    "超出46小時加班費": normal_over_46_pay,
 
-"超出46小時國定假日時數": holiday_over_46,
-"超出46小時國定假日加班費": holiday_over_46_pay,
+    "超出46小時國定假日時數": holiday_over_46,
+    "超出46小時國定假日加班費": holiday_over_46_pay,
 
     "大夜班津貼": row["大夜班津貼"],
 
@@ -537,23 +537,7 @@ formatted_rows.append({
 
     "應領": row["應領"],
     "實發薪資": row["實發薪資"]
-
-            "大夜班津貼": row["大夜班津貼"],
-
-            "請假扣款": row["請假扣款"],
-            "勞保": row["勞保"],
-            "健保": row["健保"],
-            "居留證": row["居留證"],
-            "仲介費": row["仲介費"],
-            "體檢費": row["體檢費"],
-            "所得稅": row["所得稅"],
-
-            "扣款總計": total_deduct,
-
-            "應領": row["應領"],
-            "實發薪資": row["實發薪資"]
-        })
-
+})
     formatted_df = pd.DataFrame(formatted_rows)
 
 st.table(formatted_df)
