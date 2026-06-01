@@ -214,6 +214,33 @@ with open(excel_file, "rb") as file:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+pdf_file = f"{name}_薪資明細.pdf"
+
+pdf_data = df.copy()
+pdf_data = pdf_data.astype(str)
+
+doc = SimpleDocTemplate(pdf_file, pagesize=A4)
+table_data = [pdf_data.columns.tolist()] + pdf_data.values.tolist()
+
+table = Table(table_data)
+
+table.setStyle(TableStyle([
+    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+    ("FONTSIZE", (0, 0), (-1, -1), 6),
+]))
+
+doc.build([table])
+
+with open(pdf_file, "rb") as pdf:
+    st.download_button(
+        label="下載 PDF / Tải PDF",
+        data=pdf,
+        file_name=pdf_file,
+        mime="application/pdf",
+        key=f"download_pdf_{name}"
+    )
+
 if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
     save_data = pd.DataFrame([{
         "年月": f"{year}-{month:02d}",
