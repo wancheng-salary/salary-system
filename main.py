@@ -474,66 +474,48 @@ if os.path.exists("salary_records.csv"):
 
         total_ot = row["加班時數"]
 
-        holiday_ot = 0
+holiday_ot = 0
+if "固定假日加班時數" in summary_df.columns:
+    holiday_ot = row["固定假日加班時數"]
 
-        if "國定假日加班時數" in summary_df.columns:
-            holiday_ot = row["國定假日加班時數"]
+normal_ot = max(total_ot - holiday_ot, 0)
 
-        normal_ot = max(total_ot - holiday_ot, 0)
+normal_under_46 = min(normal_ot, 46)
+normal_over_46 = max(normal_ot - 46, 0)
 
-        ot_under_46 = min(normal_ot, 46)
-        ot_over_46 = max(normal_ot - 46, 0)
+holiday_under_46 = min(holiday_ot, 46)
+holiday_over_46 = max(holiday_ot - 46, 0)
 
-        holiday_under_46 = min(holiday_ot, 46)
-        holiday_over_46 = max(holiday_ot - 46, 0)
+hourly_wage = row["月薪"] / 30 / 8
 
-        total_deduct = (
-            row["請假扣款"]
-            + row["勞保"]
-            + row["健保"]
-            + row["居留證"]
-            + row["仲介費"]
-            + row["體檢費"]
-            + row["所得稅"]
-        )
+normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
 
-        formatted_rows.append({
-            "年月": row["年月"],
-            "姓名": row["姓名"],
-            "單位": row["單位"],
-            "分組": row["分組"],
-            "月薪": row["月薪"],
+holiday_under_46_pay = 0
+holiday_over_46_pay = 0
 
-            hourly_wage = row["月薪"] / 30 / 8
+normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
 
-ot_over_46_pay = round(
-    ot_over_46 * hourly_wage * 1.67
+total_deduct = (
+    row["請假扣款"]
+    + row["勞保"]
+    + row["健保"]
+    + row["居留證"]
+    + row["仲介費"]
+    + row["體檢費"]
+    + row["所得稅"]
 )
 
-ot_under_46_pay = row["加班費"] - ot_over_46_pay
+"46小時內加班時數": normal_under_46,
+"46小時內加班費": normal_under_46_pay,
 
-formatted_rows.append({
+"46小時內國定假日時數": holiday_under_46,
+"46小時內國定假日加班費": holiday_under_46_pay,
 
-    "年月": row["年月"],
-    "姓名": row["姓名"],
-    "單位": row["單位"],
-    "分組": row["分組"],
-    "月薪": row["月薪"],
+"超出46小時加班時數": normal_over_46,
+"超出46小時加班費": normal_over_46_pay,
 
-    "46小時內加班時數": ot_under_46,
-    "46小時內加班費": ot_under_46_pay,
-
-    "46小時內國定假日時數": holiday_under_46,
-    "46小時內國定假日加班費": 0,
-
-    "超出46小時加班時數": ot_over_46,
-    "超出46小時加班費": ot_over_46_pay,
-
-    "超出46小時國定假日時數": holiday_over_46,
-    "超出46小時國定假日加班費": 0,
-
-    "加班總時數": total_ot,
-    "加班費總計": row["加班費"],
+"超出46小時國定假日時數": holiday_over_46,
+"超出46小時國定假日加班費": holiday_over_46_pay,
 
     "大夜班津貼": row["大夜班津貼"],
 
