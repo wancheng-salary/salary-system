@@ -225,7 +225,7 @@ with open(excel_file, "rb") as file:
 
 pdf_file = f"{name}_薪資明細.pdf"
 
-pdfmetrics.registerFont(TTFont("DejaVu", "DejaVuSans.ttf"))
+pdfmetrics.registerFont(TTFont("NotoSans", "NotoSansHK-Regular.ttf"))
 
 pdf_data = df.copy().astype(str)
 
@@ -243,7 +243,7 @@ table_data = [pdf_data.columns.tolist()] + pdf_data.values.tolist()
 table = Table(table_data, repeatRows=1)
 
 table.setStyle(TableStyle([
-    ("FONTNAME", (0, 0), (-1, -1), "DejaVu"),
+   ("FONTNAME", (0, 0), (-1, -1), "NotoSans"),
     ("FONTSIZE", (0, 0), (-1, -1), 6),
     ("GRID", (0, 0), (-1, -1), 0.3, colors.black),
     ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
