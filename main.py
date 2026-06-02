@@ -8,6 +8,8 @@ import os
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
 
@@ -525,15 +527,20 @@ holiday_over_46_pay = 0
 
 normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
 
-total_deduct = (
-    row["請假扣款"]
-    + row["勞保"]
-    + row["健保"]
-    + row["居留證"]
+other_deduct = (
+    row["居留證"]
     + row["仲介費"]
     + row["體檢費"]
     + row["所得稅"]
 )
+
+total_deduct = (
+    row["請假扣款"]
+    + row["勞保"]
+    + row["健保"]
+    + other_deduct
+)
+
 formatted_rows.append({
     "年月": row["年月"],
     "姓名": row["姓名"],
@@ -553,25 +560,77 @@ formatted_rows.append({
     "超出46小時國定假日時數": holiday_over_46,
     "超出46小時國定假日加班費": holiday_over_46_pay,
 
-    "大夜班津貼": row["大夜班津貼"],
+    "加班總時數": total_ot,
+    "加班費總計": row["加班費"],
 
+    "大夜班津貼": row["大夜班津貼"],
     "請假扣款": row["請假扣款"],
     "勞保": row["勞保"],
     "健保": row["健保"],
-    "居留證": row["居留證"],
-    "仲介費": row["仲介費"],
-    "體檢費": row["體檢費"],
-    "所得稅": row["所得稅"],
-
+    "其他扣款": other_deduct,
     "扣款總計": total_deduct,
 
     "應領": row["應領"],
     "實發薪資": row["實發薪資"]
 })
+
 formatted_df = pd.DataFrame(formatted_rows)
 
 st.table(formatted_df)
+
+# 下載薪資總表 Excel
+complex_excel = "薪資總表.xlsx"
+formatted_df.to_excel(complex_excel, index=False)
+
+with open(complex_excel, "rb") as file:
+    st.download_button(
+        label="下載薪資總表 Excel",
+        data=file,
+        file_name="薪資總表.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="download_complex_salary"
+    )
+
+# 簡化版總表
 st.subheader("簡化版總表")
+
+simple_cols = [
+    "年月", "姓名", "單位", "分組", "月薪",
+
+    "加班總時數",
+    "加班費總計",
+
+    "46小時內國定假日時數",
+    "46小時內國定假日加班費",
+    "超出46小時國定假日時數",
+    "超出46小時國定假日加班費",
+
+    "大夜班津貼",
+    "請假扣款",
+    "勞保",
+    "健保",
+    "其他扣款",
+    "扣款總計",
+    "應領",
+    "實發薪資"
+]
+
+simple_cols = [c for c in simple_cols if c in formatted_df.columns]
+simple_df = formatted_df[simple_cols]
+
+st.table(simple_df)
+
+simple_excel = "簡化版薪資總表.xlsx"
+simple_df.to_excel(simple_excel, index=False)
+
+with open(simple_excel, "rb") as file:
+    st.download_button(
+        label="下載簡化版總表 Excel",
+        data=file,
+        file_name="簡化版薪資總表.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="download_simple_salary"
+    )
 
 simple_cols = [
     "年月", "姓名", "單位", "分組", "月薪",
