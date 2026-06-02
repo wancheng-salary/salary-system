@@ -5,7 +5,7 @@ import calendar
 from datetime import date
 import math
 import os
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
@@ -221,18 +221,29 @@ with open(excel_file, "rb") as file:
 
 pdf_file = f"{name}_薪資明細.pdf"
 
-pdf_data = df.copy()
-pdf_data = pdf_data.astype(str)
+pdfmetrics.registerFont(TTFont("DejaVu", "DejaVuSans.ttf"))
 
-doc = SimpleDocTemplate(pdf_file, pagesize=A4)
+pdf_data = df.copy().astype(str)
+
+doc = SimpleDocTemplate(
+    pdf_file,
+    pagesize=landscape(A4),
+    rightMargin=10,
+    leftMargin=10,
+    topMargin=10,
+    bottomMargin=10
+)
+
 table_data = [pdf_data.columns.tolist()] + pdf_data.values.tolist()
 
-table = Table(table_data)
+table = Table(table_data, repeatRows=1)
 
 table.setStyle(TableStyle([
-    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+    ("FONTNAME", (0, 0), (-1, -1), "DejaVu"),
     ("FONTSIZE", (0, 0), (-1, -1), 6),
+    ("GRID", (0, 0), (-1, -1), 0.3, colors.black),
+    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
 ]))
 
 doc.build([table])
