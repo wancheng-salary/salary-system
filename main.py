@@ -11,6 +11,9 @@ from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
+pdfmetrics.registerFont(
+    TTFont("DejaVu", "DejaVuSans.ttf")
+
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
 
 employees_df = pd.read_csv("employees.csv", encoding="utf-8")
