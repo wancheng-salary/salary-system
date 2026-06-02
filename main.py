@@ -12,7 +12,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 pdfmetrics.registerFont(
-    TTFont("NotoSans", "NotoSansHK-Regular.ttf")
+    TTFont("DejaVu", "DejaVuSans.ttf")
 )
 
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
