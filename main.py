@@ -560,6 +560,11 @@ formatted_rows.append({
     "超出46小時國定假日時數": holiday_over_46,
     "超出46小時國定假日加班費": holiday_over_46_pay,
 
+    "國定假日總時數": holiday_under_46 + holiday_over_46,
+
+    "國定假日加班費":holiday_under_46_pay + holiday_over_46_pay,
+     
+
     "加班總時數": total_ot,
     "加班費總計": row["加班費"],
 
@@ -599,10 +604,12 @@ simple_cols = [
 
     "加班總時數",
     "加班費總計",
-    "國定假日時數",
+    
+    "國定假日總時數",
     "國定假日加班費",
 
     "大夜班津貼",
+    
     "請假扣款",
     "勞保",
     "健保",
