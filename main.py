@@ -12,7 +12,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 pdfmetrics.registerFont(
-    TTFont("NotoSans", "NotoSansTC-Regular.ttf")
+    TTFont("NotoSans", "NotoSansTC-VariableFont_wght.ttf")
 )
 
 st.title("每月薪資計算系統 / Hệ thống tính lương hàng tháng")
@@ -225,8 +225,9 @@ with open(excel_file, "rb") as file:
 
 pdf_file = f"{name}_薪資明細.pdf"
 
-pdfmetrics.registerFont(TTFont("NotoSans", "NotoSansHK-Regular.ttf"))
-
+pdfmetrics.registerFont(
+    TTFont("NotoSans", "NotoSansTC-VariableFont_wght.ttf")
+)
 pdf_data = df.copy().astype(str)
 
 doc = SimpleDocTemplate(
