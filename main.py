@@ -33,7 +33,8 @@ name = st.selectbox("員工姓名 / Họ tên nhân viên", employee_names)
 
 name = st.selectbox(
     "員工姓名 / Họ tên nhân viên",
-    employee_names
+    employee_names,
+    key="employee_name"
 )
 
 if st.button("清除上一位資料 / Xóa dữ liệu"):
