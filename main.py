@@ -747,7 +747,7 @@ for _, row in summary_df.iterrows():
 
     normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
 
-    holiday_under_46_pay = row["國定假日加班費"]
+    holiday_under_46_pay = row.get("國定假日加班費", 0)
     holiday_over_46_pay = 0
 
     normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
