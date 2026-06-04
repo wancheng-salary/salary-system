@@ -405,6 +405,9 @@ table_data = []
 page_width, page_height = landscape(A4)
 usable_width = page_width - 10
 
+summary_df = pd.DataFrame(detail_rows, columns=["項目", "內容"]).astype(str)
+daily_df = df.copy().astype(str)
+
 summary_data = []
 summary_data.append([
     Paragraph("項目", style),
