@@ -620,7 +620,7 @@ if len(history_df) > 0:
 
         holiday_ot = 0
         if "固定假日加班時數" in summary_df.columns:
-        holiday_ot = row["固定假日加班時數"]
+            holiday_ot = row["固定假日加班時數"]
 
         normal_ot = max(total_ot - holiday_ot, 0)
 
