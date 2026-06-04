@@ -486,7 +486,7 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
     ot_col = "加班時數 / Giờ tăng ca"
     pay_col = "加班費 / Tiền tăng ca"
 
-    holiday_rows = df[df[holiday_col].astype(str).str.contains("是|Có", na=False)]
+    holiday_rows = df[df[holiday_col].astype(str).str.contains("是", na=False)]
 
     holiday_total_hours = holiday_rows[ot_col].sum()
     holiday_total_pay = holiday_rows[pay_col].sum()
