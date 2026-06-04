@@ -768,8 +768,16 @@ for _, row in summary_df.iterrows():
     normal_under_46 = min(normal_ot, 46)
     normal_over_46 = max(normal_ot - 46, 0)
 
-    holiday_under_46 = min(holiday_ot, 46)
-    holiday_over_46 = max(holiday_ot - 46, 0)
+    if total_ot > 46:
+        holiday_under_46 = 0
+        holiday_under_46_pay = 0
+        holiday_over_46 = holiday_ot
+        holiday_over_46_pay = holiday_pay
+    else:
+        holiday_under_46 = holiday_ot
+        holiday_under_46_pay = holiday_pay
+        holiday_over_46 = 0
+        holiday_over_46_pay = 0
 
     monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
     hourly_wage = monthly_salary / 30 / 8
