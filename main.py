@@ -44,14 +44,9 @@ if st.button("清除上一位資料 / Xóa dữ liệu"):
         st.session_state[f"night_{i}"] = 0
 
     st.rerun()
-
-year = st.number_input(
-    "年份 / Năm",
-    min_value=2024,
-    max_value=2035,
-    value=2026
-)
     
+if "reset_count" not in st.session_state:
+    st.session_state.reset_count = 0
 
 reset_key = st.session_state.reset_count
 
