@@ -482,6 +482,11 @@ with open(pdf_file, "rb") as pdf:
     )
 
 if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
+    holiday_rows = df[df["國定假日"].astype(str).str.contains("是|Có", na=False)]
+
+    holiday_total_hours = holiday_rows["加班時數"].sum()
+    holiday_total_pay = holiday_rows["加班費"].sum()
+    
     save_data = pd.DataFrame([{
         "年月": f"{year}-{month:02d}",
         "姓名": name,
