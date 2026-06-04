@@ -621,26 +621,26 @@ if os.path.exists("salary_records.csv"):
 
         total_ot = row["加班時數"]
 
-holiday_ot = 0
-if "固定假日加班時數" in summary_df.columns:
-    holiday_ot = row["固定假日加班時數"]
+        holiday_ot = 0
+        if "固定假日加班時數" in summary_df.columns:
+        holiday_ot = row["固定假日加班時數"]
 
-normal_ot = max(total_ot - holiday_ot, 0)
+        normal_ot = max(total_ot - holiday_ot, 0)
 
-normal_under_46 = min(normal_ot, 46)
-normal_over_46 = max(normal_ot - 46, 0)
+        normal_under_46 = min(normal_ot, 46)
+        normal_over_46 = max(normal_ot - 46, 0)
 
-holiday_under_46 = min(holiday_ot, 46)
-holiday_over_46 = max(holiday_ot - 46, 0)
+        holiday_under_46 = min(holiday_ot, 46)
+        holiday_over_46 = max(holiday_ot - 46, 0)
 
-hourly_wage = row["月薪"] / 30 / 8
+        hourly_wage = row["月薪"] / 30 / 8
 
-normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
+        normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
 
-holiday_under_46_pay = 0
-holiday_over_46_pay = 0
+        holiday_under_46_pay = 0
+        holiday_over_46_pay = 0
 
-normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
+        normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
 
 other_deduct = (
     row["居留證"]
