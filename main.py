@@ -29,7 +29,6 @@ else:
     filtered_employees = employees_df[employees_df["單位"] == selected_unit]
 
 employee_names = [""] + filtered_employees["姓名"].tolist()
-name = st.selectbox("員工姓名 / Họ tên nhân viên", employee_names)
 
 name = st.selectbox(
     "員工姓名 / Họ tên nhân viên",
