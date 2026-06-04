@@ -303,25 +303,27 @@ detail_rows = [
 
 excel_file = "salary_result.xlsx"
 
+detail_df = pd.DataFrame(
+    detail_rows,
+    columns=["項目","內容"]
+)
+
 with pd.ExcelWriter(excel_file) as writer:
 
-    # 工作日明細
-    df.to_excel(
-        writer,
-        sheet_name="每日明細",
-        index=False
-    )
-
-    # 薪資摘要
-    detail_df = pd.DataFrame(
-        detail_rows,
-        columns=["項目","內容"]
-    )
-
+    # 先寫摘要
     detail_df.to_excel(
         writer,
-        sheet_name="薪資摘要",
-        index=False
+        sheet_name="薪資明細",
+        index=False,
+        startrow=0
+    )
+
+    # 再寫每日明細
+    df.to_excel(
+        writer,
+        sheet_name="薪資明細",
+        index=False,
+        startrow=len(detail_df) + 3
     )
     
 file_name = f"{name}_薪資明細.xlsx"
