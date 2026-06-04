@@ -718,21 +718,23 @@ st.table(simple_df)
 simple_excel = "simple_salary_summary.xlsx"
 simple_df.to_excel(simple_excel, index=False)
 
+# 下載簡化版總表 Excel
+simple_excel = "simple_salary_summary.xlsx"
+simple_df.to_excel(simple_excel, index=False)
+
 with open(simple_excel, "rb") as file:
     st.download_button(
         label="下載簡化版總表 Excel",
         data=file,
         file_name="簡化版薪資總表.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="download_simple_salary"
+        key="download_simple_salary_final"
     )
 
-    complex_excel = "complex_salary_summary.xlsx"
 
-    formatted_df.to_excel(
-        complex_excel,
-        index=False
-    )
+# 下載完整薪資總表 Excel
+complex_excel = "complex_salary_summary.xlsx"
+formatted_df.to_excel(complex_excel, index=False)
 
 with open(complex_excel, "rb") as file:
     st.download_button(
@@ -740,43 +742,36 @@ with open(complex_excel, "rb") as file:
         data=file,
         file_name="薪資總表.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="download_complex_salary"
+        key="download_complex_salary_final"
     )
 
+
+# 刪除總表紀錄
 st.subheader("刪除總表紀錄")
 
 delete_options = [
-    f"{idx}｜{row['年月']}｜{row['姓名']}｜實發 {row['實發薪資']}"
-     for idx, row in summary_df.iterrows()
+    f"{idx} | {row['年月']} | {row['姓名']} | 實發 {row['實發薪資']}"
+    for idx, row in summary_df.iterrows()
 ]
 
 if len(delete_options) > 0:
-
     delete_choice = st.selectbox(
         "選擇要刪除的紀錄",
-        delete_options
+        delete_options,
+        key="delete_salary_record_select"
     )
 
-    if st.button("刪除選取紀錄"):
+    if st.button("刪除選取紀錄", key="delete_salary_record_button"):
+        delete_index = int(delete_choice.split(" | ")[0])
 
-         delete_index = int(
-            delete_choice.split("｜")[0]
+        history_df = history_df.drop(index=delete_index)
+        history_df.to_csv(
+            "salary_records.csv",
+            index=False,
+            encoding="utf-8-sig"
         )
 
-         history_df = history_df.drop(
-            index=delete_index
-         )
-
-         history_df.to_csv(
-             "salary_records.csv",
-            index=False,
-             encoding="utf-8-sig"
-         )
-
-         st.success("已刪除紀錄")
-
+        st.success("已刪除紀錄")
+        st.rerun()
 else:
-
-    st.info(
-        "目前還沒有薪資紀錄，請先儲存薪資資料。"
-    )
+    st.info("目前還沒有薪資紀錄，請先儲存薪資資料。")
