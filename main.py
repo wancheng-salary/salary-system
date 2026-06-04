@@ -400,14 +400,7 @@ style = ParagraphStyle(
 
 table_data = []
 
-table_data.append([
-    Paragraph(str(col), style) for col in pdf_data.columns.tolist()
-])
 
-for row in pdf_data.values.tolist():
-    table_data.append([
-        Paragraph(str(cell), style) for cell in row
-    ])
 
 page_width, page_height = landscape(A4)
 usable_width = page_width - 10
