@@ -302,7 +302,8 @@ detail_rows = [
 ]
 
 excel_file = "salary_result.xlsx"
-df.to_excel(excel_file, index=False)
+detail_df = pd.DataFrame(detail_rows, columns=["項目", "內容"])
+detail_df.to_excel(excel_file, index=False)
 
 file_name = f"{name}_薪資明細.xlsx"
 
@@ -334,7 +335,7 @@ detail_rows = [
 
 pdf_file = f"{name}_薪資明細.pdf"
 
-pdf_data = df.copy().astype(str)
+pdf_data = pd.DataFrame(detail_rows, columns=["項目", "內容"]).astype(str)
 
 doc = SimpleDocTemplate(
     pdf_file,
