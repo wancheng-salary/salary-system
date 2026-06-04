@@ -359,8 +359,8 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         save_data = pd.concat([old_data, save_data], ignore_index=True)
 
     save_data.to_csv(save_file, index=False, encoding="utf-8-sig")
-st.write("目前總表筆數：", len(save_data))
-st.success("薪資資料已儲存成功！")
+    st.write("目前總表筆數：", len(save_data))
+    st.success("薪資資料已儲存成功！")
 
     group_1 = [
     "邱是傑",
