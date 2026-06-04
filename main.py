@@ -613,31 +613,31 @@ if len(history_df) > 0:
     st.write(summary_df[["年月", "姓名", "單位", "分組"]])
     
     formatted_rows = []
+formatted_rows = []
 
-    for _, row in summary_df.iterrows():
+for _, row in summary_df.iterrows():
+    total_ot = row["加班時數"]
 
-        total_ot = row["加班時數"]
+    holiday_ot = 0
+    if "固定假日加班時數" in summary_df.columns:
+        holiday_ot = row["固定假日加班時數"]
 
-        holiday_ot = 0
-        if "固定假日加班時數" in summary_df.columns:
-            holiday_ot = row["固定假日加班時數"]
+    normal_ot = max(total_ot - holiday_ot, 0)
 
-        normal_ot = max(total_ot - holiday_ot, 0)
+    normal_under_46 = min(normal_ot, 46)
+    normal_over_46 = max(normal_ot - 46, 0)
 
-        normal_under_46 = min(normal_ot, 46)
-        normal_over_46 = max(normal_ot - 46, 0)
+    holiday_under_46 = min(holiday_ot, 46)
+    holiday_over_46 = max(holiday_ot - 46, 0)
 
-        holiday_under_46 = min(holiday_ot, 46)
-        holiday_over_46 = max(holiday_ot - 46, 0)
+    hourly_wage = row["月薪"] / 30 / 8
 
-        hourly_wage = row["月薪"] / 30 / 8
+    normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
 
-        normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
+    holiday_under_46_pay = 0
+    holiday_over_46_pay = 0
 
-        holiday_under_46_pay = 0
-        holiday_over_46_pay = 0
-
-        normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
+    normal_under_46_pay = row["加班費"] - normal_over_46_pay - holiday_under_46_pay - holiday_over_46_pay
 
     other_deduct = (
         row["居留證"]
@@ -653,45 +653,34 @@ if len(history_df) > 0:
         + other_deduct
     )
 
-    formatted_rows.append({
+    one_row = {
         "年月": row["年月"],
         "姓名": row["姓名"],
         "單位": row["單位"],
         "分組": row["分組"],
         "月薪": row["月薪"],
-
         "46小時內加班時數": normal_under_46,
         "46小時內加班費": normal_under_46_pay,
-
-        "46小時內國定假日時數": holiday_under_46,
-        "46小時內國定假日加班費": holiday_under_46_pay,
-
         "超出46小時加班時數": normal_over_46,
         "超出46小時加班費": normal_over_46_pay,
-
-        "超出46小時國定假日時數": holiday_over_46,
-        "超出46小時國定假日加班費": holiday_over_46_pay,
-
         "國定假日總時數": holiday_under_46 + holiday_over_46,
-
-        "國定假日加班費":holiday_under_46_pay + holiday_over_46_pay,
-     
-
+        "國定假日加班費": holiday_under_46_pay + holiday_over_46_pay,
         "加班總時數": total_ot,
         "加班費總計": row["加班費"],
-
         "大夜班津貼": row["大夜班津貼"],
         "請假扣款": row["請假扣款"],
         "勞保": row["勞保"],
         "健保": row["健保"],
         "其他扣款": other_deduct,
         "扣款總計": total_deduct,
-
         "應領": row["應領"],
         "實發薪資": row["實發薪資"]
-    })
+    }
+
+    formatted_rows.append(one_row)
 
 formatted_df = pd.DataFrame(formatted_rows)
+    
 
 st.table(formatted_df)
 
