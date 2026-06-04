@@ -911,21 +911,21 @@ if len(delete_options) > 0:
         key="delete_salary_record_select"
     )
 
-   if st.button("刪除選取紀錄", key="delete_salary_record_btn"):
+    if st.button("刪除選取紀錄", key="delete_salary_record_btn"):
 
-    selected_index = int(delete_choice.split("|")[0].strip())
+        selected_index = int(delete_choice.split("|")[0].strip())
 
-    new_data = history_df.drop(index=selected_index)
-    new_data = new_data.reset_index(drop=True)
+        new_data = history_df.drop(index=selected_index)
+        new_data = new_data.reset_index(drop=True)
 
-    sheet.clear()
+        sheet.clear()
 
-    if len(new_data) > 0:
-        sheet.update(
-            [new_data.columns.tolist()] + new_data.values.tolist()
-        )
+        if len(new_data) > 0:
+            sheet.update(
+                [new_data.columns.tolist()] + new_data.values.tolist()
+            )
 
-    st.success("已刪除紀錄")
-    st.rerun()
+        st.success("已刪除紀錄")
+        st.rerun()
 else:
     st.info("目前還沒有薪資紀錄，請先儲存薪資資料。")
