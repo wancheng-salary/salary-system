@@ -490,6 +490,10 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
 
     holiday_total_hours = holiday_rows[ot_col].sum()
     holiday_total_pay = holiday_rows[pay_col].sum()
+
+    st.write(df.columns.tolist())
+    st.write(holiday_rows)
+
     
     save_data = pd.DataFrame([{
         "年月": f"{year}-{month:02d}",
