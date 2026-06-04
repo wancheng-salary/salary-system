@@ -11,7 +11,37 @@ from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import ParagraphStyle
+import gspread
+from google.oauth2.service_account import Credentials
+import gspread
+from google.oauth2.service_account import Credentials
+def read_salary_records():
+    data = sheet.get_all_records()
+    return pd.DataFrame(data) if data else pd.DataFrame()
 
+
+def save_salary_record(save_data):
+    old_data = read_salary_records()
+    new_data = pd.concat([old_data, save_data], ignore_index=True)
+
+    sheet.clear()
+    sheet.update([new_data.columns.tolist()] + new_data.values.tolist())
+
+    return new_data
+SHEET_ID = st.secrets["SHEET_ID"]
+
+scope = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+credentials = Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=scope
+)
+
+gc = gspread.authorize(credentials)
+sheet = gc.open_by_key(SHEET_ID).worksheet("salary_records")
 
 pdfmetrics.registerFont(
     TTFont("NotoSans", "NotoSansTC-VariableFont_wght.ttf")
@@ -352,13 +382,8 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         "實發薪資": final_salary
     }])
 
-    save_file = "salary_records.csv"
+    save_data = save_salary_record(save_data)
 
-    if os.path.exists(save_file):
-        old_data = pd.read_csv(save_file)
-        save_data = pd.concat([old_data, save_data], ignore_index=True)
-
-    save_data.to_csv(save_file, index=False, encoding="utf-8-sig")
     st.write("目前總表筆數：", len(save_data))
     st.success("薪資資料已儲存成功！")
 
