@@ -754,13 +754,11 @@ if len(history_df) > 0:
 formatted_rows = []
 
 for _, row in summary_df.iterrows():
-    total_ot = row.get("加班時數", 0)
+    total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
 
-    holiday_ot = row.get("國定假日總時數", 0)
-    holiday_pay = row.get("國定假日加班費", 0)
+    holiday_ot = float(row.get("國定假日總時數", 0) or 0)
 
-    st.write("holiday_ot =", holiday_ot)
-    st.write("holiday_pay =", holiday_pay)
+    holiday_pay = float(row.get("國定假日加班費", 0) or 0)
 
     
 
