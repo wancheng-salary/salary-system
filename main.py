@@ -785,8 +785,6 @@ for _, row in summary_df.iterrows():
     normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
     normal_under_46_pay = normal_pay - normal_over_46_pay
 
-    holiday_under_46_pay = holiday_pay
-    holiday_over_46_pay = 0
 
     other_deduct = (
         row["居留證"]
