@@ -40,8 +40,9 @@ credentials = Credentials.from_service_account_info(
     scopes=scope
 )
 
-gc = gspread.authorize(credentials)
 sheet = gc.open_by_key(SHEET_ID).worksheet("salary_records")
+gc = gspread.authorize(credentials)
+
 
 pdfmetrics.registerFont(
     TTFont("NotoSans", "NotoSansTC-VariableFont_wght.ttf")
