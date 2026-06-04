@@ -691,6 +691,8 @@ def get_group(employee_name):
 st.subheader("所有員工薪資總表")
 
 history_df = read_salary_records()
+history_df.columns = history_df.columns.astype(str).str.strip()
+
 
 if len(history_df) > 0:
 
@@ -751,7 +753,8 @@ for _, row in summary_df.iterrows():
     holiday_under_46 = min(holiday_ot, 46)
     holiday_over_46 = max(holiday_ot - 46, 0)
 
-    hourly_wage = row["月薪"] / 30 / 8
+    monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
+    hourly_wage = monthly_salary / 30 / 8
 
     normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
     normal_under_46_pay = normal_pay - normal_over_46_pay
@@ -778,7 +781,7 @@ for _, row in summary_df.iterrows():
     "姓名": row["姓名"],
     "單位": row["單位"],
     "分組": row["分組"],
-    "月薪": row["月薪"],
+    "月薪": monthly_salary,
     "46小時內加班時數": normal_under_46,
     "46小時內加班費": normal_under_46_pay,
     "46小時內國定假日加班時數": holiday_under_46,
