@@ -744,6 +744,11 @@ for _, row in summary_df.iterrows():
     holiday_ot = row.get("國定假日總時數", 0)
     holiday_pay = row.get("國定假日加班費", 0)
 
+    st.write("holiday_ot =", holiday_ot)
+    st.write("holiday_pay =", holiday_pay)
+
+    
+
     normal_ot = max(total_ot - holiday_ot, 0)
     normal_pay = row.get("加班費", 0) - holiday_pay
 
