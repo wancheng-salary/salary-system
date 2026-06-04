@@ -129,6 +129,14 @@ for d in range(1, days + 1):
             key=f"leave_{d}"
         )
 
+        leave_hours = st.number_input(
+            f"請假時數 / Giờ nghỉ {d}",
+            min_value=0.0,
+            max_value=8.0,
+            step=0.5,
+            key=f"leave_hours_{d}"
+        ) 
+
     with col4:
         is_holiday = st.checkbox(
             f"國定假日 / Ngày lễ {d}",
@@ -140,6 +148,7 @@ for d in range(1, days + 1):
         "星期 / Thứ": weekday,
         "加班時數 / Giờ tăng ca": overtime,
         "請假原因 / Lý do nghỉ": leave,
+        "請假時數": leave_hours,
         "國定假日 / Ngày lễ": "是 / Có" if is_holiday else "否 / Không"
     })
 
@@ -175,19 +184,30 @@ df["加班費 / Tiền tăng ca"] = df.apply(
     axis=1
 )
 
-def calc_leave_deduct(leave):
+def calc_leave_deduct(row):
+
+    leave = row["請假原因 / Lý do nghỉ"]
+    leave_hours = row["請假時數"]
+
+    amount = hourly_wage * leave_hours
+
     if leave == "事假 / Nghỉ việc riêng":
-        return daily_wage
+        return amount
+
     elif leave == "病假 / Nghỉ bệnh":
-        return daily_wage / 2
+        return amount * 0.5
+
     elif leave == "曠職 / Vắng mặt":
-        return daily_wage
+        return amount
+
     else:
         return 0
 
-df["請假扣薪 / Trừ lương nghỉ"] = df["請假原因 / Lý do nghỉ"].apply(
-    lambda x: math.ceil(calc_leave_deduct(x))
+df["請假扣薪 / Trừ lương nghỉ"] = df.apply(
+    lambda row: math.ceil(calc_leave_deduct(row)),
+    axis=1
 )
+
 
 total_ot_hours = df["加班時數 / Giờ tăng ca"].sum()
 total_ot_pay = df["加班費 / Tiền tăng ca"].sum()
