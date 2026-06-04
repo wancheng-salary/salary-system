@@ -584,7 +584,7 @@ if os.path.exists("salary_records.csv"):
         index=0
     )
 
-   group_filter = st.selectbox(
+    group_filter = st.selectbox(
         "分組篩選",
         ["全部", "巴恩斯-第一組", "巴恩斯-第二組", "巴恩斯-第三組", "未分組"],
         index=0
