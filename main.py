@@ -405,10 +405,22 @@ table_data = []
 page_width, page_height = landscape(A4)
 usable_width = page_width - 10
 
+summary_data = []
+summary_data.append([
+    Paragraph("項目", style),
+    Paragraph("內容", style)
+])
+
+for row in summary_df.values.tolist():
+    summary_data.append([
+        Paragraph(str(row[0]), style),
+        Paragraph(str(row[1]), style)
+    ])
+
 summary_col_widths = [usable_width * 0.45, usable_width * 0.55]
 
 summary_table = Table(
-    table_data,
+    summary_data,
     colWidths=summary_col_widths,
     repeatRows=1
 )
