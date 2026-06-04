@@ -611,7 +611,10 @@ if os.path.exists("salary_records.csv"):
         summary_df = summary_df[
             summary_df["年月"].astype(str) == month_filter
         ]
-
+    st.write("history_df筆數：", len(history_df))
+    st.write("summary_df筆數：", len(summary_df))
+    st.write(summary_df[["年月", "姓名", "單位", "分組"]])
+    
     formatted_rows = []
 
     for _, row in summary_df.iterrows():
