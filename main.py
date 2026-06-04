@@ -287,7 +287,7 @@ table = Table(
 
 table.setStyle(TableStyle([
     ("FONTNAME", (0, 0), (-1, -1), "NotoSans"),
-    ("FONTSIZE", (0, 0), (-1, -1), 5),
+    ("FONTSIZE", (0, 0), (-1, -1), 4),
     ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
     ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
