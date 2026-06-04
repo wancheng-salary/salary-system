@@ -22,12 +22,20 @@ def read_salary_records():
 
 def save_salary_record(save_data):
     old_data = read_salary_records()
+
     new_data = pd.concat([old_data, save_data], ignore_index=True)
 
+    # 清掉空值，避免 Google Sheet JSON 錯誤
+    new_data = new_data.fillna("")
+    new_data = new_data.replace([float("inf"), float("-inf")], "")
+
     sheet.clear()
-    sheet.update([new_data.columns.tolist()] + new_data.values.tolist())
+
+    values = [new_data.columns.tolist()] + new_data.astype(str).values.tolist()
+    sheet.update(values)
 
     return new_data
+
 SHEET_ID = st.secrets["SHEET_ID"]
 
 scope = [
