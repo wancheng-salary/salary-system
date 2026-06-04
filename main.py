@@ -283,6 +283,24 @@ st.success(f"實發薪資 / Lương thực lãnh：約 {final_salary:.0f} 元")
 st.subheader("明細表 / Bảng chi tiết")
 st.table(df)
 
+detail_rows = [
+    ["員工姓名 / Họ tên", name],
+    ["單位 / Đơn vị", company],
+    ["月薪 / Lương cơ bản", base_salary],
+    ["總加班時數 / Tổng giờ tăng ca", total_ot_hours],
+    ["加班費 / Tiền tăng ca", total_ot_pay],
+    ["大夜班津貼 / Phụ cấp ca đêm", night_allowance_total],
+    ["請假扣薪 / Trừ lương nghỉ phép", total_leave_deduct],
+    ["勞保扣款 / Bảo hiểm lao động", labor_insurance],
+    ["健保扣款 / Bảo hiểm y tế", health_insurance],
+    ["居留證費用 / Phí thẻ cư trú", arc_fee],
+    ["仲介服務費 / Phí môi giới", agency_fee],
+    ["體檢費 / Phí khám sức khỏe", medical_fee],
+    ["所得稅扣款 / Thuế thu nhập", income_tax],
+    ["扣款合計 / Tổng khấu trừ", total_deduct],
+    ["實發薪資 / Lương thực lãnh", final_salary],
+]
+
 excel_file = "salary_result.xlsx"
 df.to_excel(excel_file, index=False)
 
@@ -295,6 +313,24 @@ with open(excel_file, "rb") as file:
         file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+detail_rows = [
+    ["員工姓名 / Họ tên", name],
+    ["單位 / Đơn vị", company],
+    ["月薪 / Lương cơ bản", base_salary],
+    ["總加班時數 / Tổng giờ tăng ca", total_ot_hours],
+    ["加班費 / Tiền tăng ca", total_ot_pay],
+    ["大夜班津貼 / Phụ cấp ca đêm", night_allowance_total],
+    ["請假扣薪 / Trừ lương nghỉ phép", total_leave_deduct],
+    ["勞保扣款 / Bảo hiểm lao động", labor_insurance],
+    ["健保扣款 / Bảo hiểm y tế", health_insurance],
+    ["居留證費用 / Phí thẻ cư trú", arc_fee],
+    ["仲介服務費 / Phí môi giới", agency_fee],
+    ["體檢費 / Phí khám sức khỏe", medical_fee],
+    ["所得稅扣款 / Thuế thu nhập", income_tax],
+    ["扣款合計 / Tổng khấu trừ", total_deduct],
+    ["實發薪資 / Lương thực lãnh", final_salary],
+]
 
 pdf_file = f"{name}_薪資明細.pdf"
 
