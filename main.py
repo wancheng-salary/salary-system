@@ -6,10 +6,12 @@ from datetime import date
 import math
 import os
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+
 
 pdfmetrics.registerFont(
     TTFont("NotoSans", "NotoSansTC-VariableFont_wght.ttf")
@@ -29,6 +31,30 @@ else:
 
 employee_names = [""] + filtered_employees["姓名"].tolist()
 name = st.selectbox("員工姓名 / Họ tên nhân viên", employee_names)
+
+name = st.selectbox(
+    "員工姓名 / Họ tên nhân viên",
+    employee_names
+)
+
+if st.button("清除上一位資料 / Xóa dữ liệu"):
+    for i in range(1, 32):
+        st.session_state[f"ot_{i}"] = 0.0
+        st.session_state[f"leave_{i}"] = "無 / Không"
+        st.session_state[f"holiday_{i}"] = False
+        st.session_state[f"night_{i}"] = 0
+
+    st.rerun()
+
+year = st.number_input(
+    "年份 / Năm",
+    min_value=2024,
+    max_value=2035,
+    value=2026
+)
+    
+
+reset_key = st.session_state.reset_count
 
 year = st.number_input("年份 / Năm", min_value=2024, max_value=2035, value=2026)
 month = st.number_input("月份 / Tháng", min_value=1, max_value=12, value=5)
@@ -225,30 +251,57 @@ with open(excel_file, "rb") as file:
 
 pdf_file = f"{name}_薪資明細.pdf"
 
-pdfmetrics.registerFont(
-    TTFont("NotoSans", "NotoSansTC-VariableFont_wght.ttf")
-)
 pdf_data = df.copy().astype(str)
 
 doc = SimpleDocTemplate(
     pdf_file,
     pagesize=landscape(A4),
-    rightMargin=10,
-    leftMargin=10,
-    topMargin=10,
-    bottomMargin=10
+    rightMargin=5,
+    leftMargin=5,
+    topMargin=5,
+    bottomMargin=5
 )
 
-table_data = [pdf_data.columns.tolist()] + pdf_data.values.tolist()
+style = ParagraphStyle(
+    name="PDFStyle",
+    fontName="NotoSans",
+    fontSize=5,
+    leading=6,
+    wordWrap="CJK"
+)
 
-table = Table(table_data, repeatRows=1)
+table_data = []
+
+table_data.append([
+    Paragraph(str(col), style) for col in pdf_data.columns.tolist()
+])
+
+for row in pdf_data.values.tolist():
+    table_data.append([
+        Paragraph(str(cell), style) for cell in row
+    ])
+
+page_width, page_height = landscape(A4)
+usable_width = page_width - 10
+col_width = usable_width / len(pdf_data.columns)
+
+table = Table(
+    table_data,
+    colWidths=[col_width] * len(pdf_data.columns),
+    repeatRows=1
+)
 
 table.setStyle(TableStyle([
-   ("FONTNAME", (0, 0), (-1, -1), "NotoSans"),
-    ("FONTSIZE", (0, 0), (-1, -1), 6),
-    ("GRID", (0, 0), (-1, -1), 0.3, colors.black),
+    ("FONTNAME", (0, 0), (-1, -1), "NotoSans"),
+    ("FONTSIZE", (0, 0), (-1, -1), 5),
+    ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
     ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+    ("LEFTPADDING", (0, 0), (-1, -1), 1),
+    ("RIGHTPADDING", (0, 0), (-1, -1), 1),
+    ("TOPPADDING", (0, 0), (-1, -1), 1),
+    ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
 ]))
 
 doc.build([table])
