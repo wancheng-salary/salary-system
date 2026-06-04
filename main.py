@@ -569,12 +569,9 @@ def get_group(employee_name):
 
 st.subheader("所有員工薪資總表")
 
-if os.path.exists("salary_records.csv"):
+history_df = read_salary_records()
 
-    history_df = pd.read_csv(
-        "salary_records.csv",
-        encoding="utf-8-sig"
-    )
+if len(history_df) > 0:
 
     history_df["分組"] = history_df["姓名"].apply(get_group)
 
