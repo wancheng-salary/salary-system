@@ -404,28 +404,50 @@ table_data = []
 
 page_width, page_height = landscape(A4)
 usable_width = page_width - 10
-col_width = usable_width / len(pdf_data.columns)
 
-table = Table(
+summary_col_widths = [usable_width * 0.45, usable_width * 0.55]
+
+summary_table = Table(
     table_data,
-    colWidths=[col_width] * len(pdf_data.columns),
+    colWidths=summary_col_widths,
     repeatRows=1
 )
 
-table.setStyle(TableStyle([
+daily_data = []
+daily_data.append([
+    Paragraph(str(col), style) for col in daily_df.columns.tolist()
+])
+
+for row in daily_df.values.tolist():
+    daily_data.append([
+        Paragraph(str(cell), style) for cell in row
+    ])
+
+daily_col_width = usable_width / len(daily_df.columns)
+
+daily_table = Table(
+    daily_data,
+    colWidths=[daily_col_width] * len(daily_df.columns),
+    repeatRows=1
+)
+
+summary_table.setStyle(TableStyle([
+    ("FONTNAME", (0, 0), (-1, -1), "NotoSans"),
+    ("FONTSIZE", (0, 0), (-1, -1), 6),
+    ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
+    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+]))
+
+daily_table.setStyle(TableStyle([
     ("FONTNAME", (0, 0), (-1, -1), "NotoSans"),
     ("FONTSIZE", (0, 0), (-1, -1), 4),
     ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
     ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-    ("LEFTPADDING", (0, 0), (-1, -1), 1),
-    ("RIGHTPADDING", (0, 0), (-1, -1), 1),
-    ("TOPPADDING", (0, 0), (-1, -1), 1),
-    ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
 ]))
 
-doc.build([table])
+doc.build([summary_table, daily_table])
 
 with open(pdf_file, "rb") as pdf:
     st.download_button(
