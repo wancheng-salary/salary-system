@@ -329,7 +329,7 @@ detail_rows = [
     ["仲介服務費 / Phí môi giới", agency_fee],
     ["體檢費 / Phí khám sức khỏe", medical_fee],
     ["所得稅扣款 / Thuế thu nhập", income_tax],
-    ["扣款合計 / Tổng khấu trừ", total_deduct],
+    ["扣款合計 / Tổng khấu trừ", total_leave_deduct + total_other_deduct],
     ["實發薪資 / Lương thực lãnh", final_salary],
 ]
 
