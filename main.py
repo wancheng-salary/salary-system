@@ -356,7 +356,30 @@ detail_rows = [
 
 pdf_file = f"{name}_薪資明細.pdf"
 
-pdf_data = pd.DataFrame(detail_rows, columns=["項目", "內容"]).astype(str)
+excel_file = "salary_result.xlsx"
+
+detail_df = pd.DataFrame(
+    detail_rows,
+    columns=["項目","內容"]
+)
+
+with pd.ExcelWriter(excel_file) as writer:
+
+    # 先寫摘要
+    detail_df.to_excel(
+        writer,
+        sheet_name="薪資明細",
+        index=False,
+        startrow=0
+    )
+
+    # 再寫每日明細
+    df.to_excel(
+        writer,
+        sheet_name="薪資明細",
+        index=False,
+        startrow=len(detail_df) + 3
+    )
 
 doc = SimpleDocTemplate(
     pdf_file,
