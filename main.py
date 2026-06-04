@@ -886,36 +886,7 @@ with open(simple_excel, "rb") as file:
         key="download_simple_salary"
     )
 
-simple_cols = [
-    "年月", "姓名", "單位", "分組", "月薪",
-    "加班總時數", "加班費總計",
-    "46小時內固定假日時數", "46小時內固定假日加班費",
-    "超出46小時固定假日時數", "超出46小時固定假日加班費",
-    "大夜班津貼",
-    "請假扣款", "勞保", "健保", "居留證",
-    "仲介費", "體檢費", "所得稅",
-    "應領", "實發薪資"
-]
 
-simple_cols = [c for c in simple_cols if c in formatted_df.columns]
-simple_df = formatted_df[simple_cols]
-st.table(simple_df)
-
-simple_excel = "simple_salary_summary.xlsx"
-simple_df.to_excel(simple_excel, index=False)
-
-# 下載簡化版總表 Excel
-simple_excel = "simple_salary_summary.xlsx"
-simple_df.to_excel(simple_excel, index=False)
-
-with open(simple_excel, "rb") as file:
-    st.download_button(
-        label="下載簡化版總表 Excel",
-        data=file,
-        file_name="簡化版薪資總表.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="download_simple_salary_final"
-    )
 
 
 # 下載完整薪資總表 Excel
