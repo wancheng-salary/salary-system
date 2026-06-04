@@ -491,6 +491,8 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         "時薪": hourly_wage,
         "加班時數": total_ot_hours,
         "加班費": total_ot_pay,
+        "國定假日總時數": holiday_total_hours,
+        "國定假日加班費": holiday_total_pay,
         "大夜班津貼": night_allowance_total,
         "請假扣款": total_leave_deduct,
         "勞保": labor_insurance,
