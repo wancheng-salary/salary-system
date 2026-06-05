@@ -229,7 +229,7 @@ df["加班費 / Tiền tăng ca"] = df.apply(
 def calc_leave_deduct(row):
 
     leave = row["請假原因 / Lý do nghỉ"]
-    leave_hours = row["請假時數"]
+    leave_hours = row["請假時數 / Số giờ nghỉ"]
 
     amount = hourly_wage * leave_hours
 
