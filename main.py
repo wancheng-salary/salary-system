@@ -190,7 +190,7 @@ for d in range(1, days + 1):
         "星期 / Thứ": weekday,
         "加班時數 / Giờ tăng ca": overtime,
         "請假原因 / Lý do nghỉ": leave,
-        "請假時數": Số giờ nghỉ": leave_hours,
+        "請假時數 / Số giờ nghỉ": leave_hours,
         "國定假日 / Ngày lễ": "是 / Có" if is_holiday else "否 / Không"
     })
 
