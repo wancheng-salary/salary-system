@@ -81,10 +81,12 @@ if st.button("清除上一位資料 / Xóa dữ liệu"):
     for i in range(1, 32):
         st.session_state[f"ot_{i}"] = 0.0
         st.session_state[f"leave_{i}"] = "無 / Không"
+        st.session_state[f"leave_hours_{i}"] = 0.0
         st.session_state[f"holiday_{i}"] = False
         st.session_state[f"night_{i}"] = 0
 
     st.rerun()
+
     
 if "reset_count" not in st.session_state:
     st.session_state.reset_count = 0
@@ -188,7 +190,7 @@ for d in range(1, days + 1):
         "星期 / Thứ": weekday,
         "加班時數 / Giờ tăng ca": overtime,
         "請假原因 / Lý do nghỉ": leave,
-        "請假時數": leave_hours,
+        "請假時數": Số giờ nghỉ": leave_hours,
         "國定假日 / Ngày lễ": "是 / Có" if is_holiday else "否 / Không"
     })
 
