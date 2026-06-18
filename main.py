@@ -791,38 +791,88 @@ for _, row in summary_df.iterrows():
 
     remaining_under46 = normal_under_46
 
+    for _, row in summary_df.iterrows():
+    total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
+
+    monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
+    hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
+
+    under46_first2_hours = 0
+    under46_after2_hours = 0
+    under46_first2_pay = 0
+    under46_after2_pay = 0
+
+    under46_holiday_hours = 0
+    under46_holiday_pay = 0
+
+    over46_first2_hours = 0
+    over46_after2_hours = 0
+    over46_first2_pay = 0
+    over46_after2_pay = 0
+
+    over46_holiday_hours = 0
+    over46_holiday_pay = 0
+
+    used_hours = 0
+
     for _, drow in df.iterrows():
-        if str(drow.get("國定假日 / Ngày lễ", "")).startswith("是"):
+        day_ot = float(drow.get("加班時數 / Giờ tăng ca", 0) or 0)
+        day_pay = float(drow.get("加班費 / Tiền tăng ca", 0) or 0)
+        is_holiday = str(drow.get("國定假日 / Ngày lễ", "")).startswith("是")
+
+        if day_ot <= 0:
             continue
 
-        day_ot = float(drow.get("加班時數 / Giờ tăng ca", 0) or 0)
+        remaining_under46 = max(46 - used_hours, 0)
+        put_under46 = min(day_ot, remaining_under46)
+        put_over46 = day_ot - put_under46
 
-        day_first2 = min(day_ot, 2)
-        day_after2 = max(day_ot - 2, 0)
+        if is_holiday:
+            # 國定假日：如果加班總時數超過46，全部放超出46小時國定假日
+            if total_ot > 46:
+                over46_holiday_hours += day_ot
+                over46_holiday_pay += day_pay
+            else:
+                under46_holiday_hours += day_ot
+                under46_holiday_pay += day_pay
+        else:
+            # 一般加班：每日前2小時、後2小時
+            day_first2 = min(day_ot, 2)
+            day_after2 = max(day_ot - 2, 0)
 
-        # 先分配到46小時內
-        use_first2_under = min(day_first2, remaining_under46)
-        under46_first2_hours += use_first2_under
-        remaining_under46 -= use_first2_under
+            # 先把前2小時分到46小時內，不夠再分到超出46
+            first2_under = min(day_first2, put_under46)
+            first2_over = day_first2 - first2_under
 
-        left_first2 = day_first2 - use_first2_under
-        over46_first2_hours += left_first2
+            remaining_put_under46 = put_under46 - first2_under
 
-        use_after2_under = min(day_after2, remaining_under46)
-        under46_after2_hours += use_after2_under
-        remaining_under46 -= use_after2_under
+            after2_under = min(day_after2, remaining_put_under46)
+            after2_over = day_after2 - after2_under
 
-        left_after2 = day_after2 - use_after2_under
-        over46_after2_hours += left_after2
+            under46_first2_hours += first2_under
+            under46_after2_hours += after2_under
+            over46_first2_hours += first2_over
+            over46_after2_hours += after2_over
 
-    under46_first2_pay = round(under46_first2_hours * hourly_wage * 1.34)
-    under46_after2_pay = round(under46_after2_hours * hourly_wage * 1.67)
+            under46_first2_pay += round(first2_under * hourly_wage * 1.34)
+            under46_after2_pay += round(after2_under * hourly_wage * 1.67)
+            over46_first2_pay += round(first2_over * hourly_wage * 1.34)
+            over46_after2_pay += round(after2_over * hourly_wage * 1.67)
 
-    over46_first2_pay = round(over46_first2_hours * hourly_wage * 1.34)
-    over46_after2_pay = round(over46_after2_hours * hourly_wage * 1.67)
+        used_hours += day_ot
 
+    normal_under_46 = under46_first2_hours + under46_after2_hours
     normal_under_46_pay = under46_first2_pay + under46_after2_pay
+
+    normal_over_46 = over46_first2_hours + over46_after2_hours
     normal_over_46_pay = over46_first2_pay + over46_after2_pay
+
+    total_split_ot_pay = (
+        normal_under_46_pay
+        + under46_holiday_pay
+        + normal_over_46_pay
+        + over46_holiday_pay
+    )
 
     other_deduct = (
         float(row.get("居留證", 0) or 0)
@@ -837,6 +887,9 @@ for _, row in summary_df.iterrows():
         + float(row.get("健保", 0) or 0)
         + other_deduct
     )
+
+    should_receive = monthly_salary + total_split_ot_pay + float(row.get("大夜班津貼", 0) or 0)
+    final_pay = should_receive - total_deduct
 
     one_row = {
         "年月": row["年月"],
@@ -853,8 +906,8 @@ for _, row in summary_df.iterrows():
         "46小時內加班時數": normal_under_46,
         "46小時內加班費": normal_under_46_pay,
 
-        "46小時內國定假日加班時數": holiday_under_46,
-        "46小時內國定假日加班費": holiday_under_46_pay,
+        "46小時內國定假日加班時數": under46_holiday_hours,
+        "46小時內國定假日加班費": under46_holiday_pay,
 
         "超出46小時前2小時時數": over46_first2_hours,
         "超出46小時後2小時時數": over46_after2_hours,
@@ -864,11 +917,11 @@ for _, row in summary_df.iterrows():
         "超出46小時加班時數": normal_over_46,
         "超出46小時加班費": normal_over_46_pay,
 
-        "超出46小時國定假日加班時數": holiday_over_46,
-        "超出46小時國定假日加班費": holiday_over_46_pay,
+        "超出46小時國定假日加班時數": over46_holiday_hours,
+        "超出46小時國定假日加班費": over46_holiday_pay,
 
         "加班總時數": total_ot,
-        "加班費總計": total_pay,
+        "加班費總計": total_split_ot_pay,
         "大夜班津貼": row.get("大夜班津貼", 0),
         "請假扣款": row.get("請假扣款", 0),
         "勞保": row.get("勞保", 0),
@@ -877,8 +930,8 @@ for _, row in summary_df.iterrows():
         "仲介費": row.get("仲介費", 0),
         "體檢費": row.get("體檢費", 0),
         "所得稅": row.get("所得稅", 0),
-        "應領": row.get("應領", 0),
-        "實發薪資": row.get("實發薪資", 0),
+        "應領": round(should_receive),
+        "實發薪資": round(final_pay),
     }
 
     formatted_rows.append(one_row)
