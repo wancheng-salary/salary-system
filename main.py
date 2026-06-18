@@ -272,6 +272,131 @@ final_salary = (
     - total_other_deduct
 )
 
+
+def to_number(value, default=0):
+    try:
+        if pd.isna(value) or value == "":
+            return default
+        return float(value)
+    except Exception:
+        return default
+
+
+def split_overtime_by_day(daily_df, monthly_salary):
+    """依每日資料拆分：前2小時/後2小時、46小時內/超出46小時、國定假日。"""
+    hourly = monthly_salary / 30 / 8 if monthly_salary else 0
+    total_ot = to_number(daily_df["加班時數 / Giờ tăng ca"].sum())
+
+    result = {
+        "46小時內前2小時時數": 0.0,
+        "46小時內後2小時時數": 0.0,
+        "46小時內前2小時加班費": 0,
+        "46小時內後2小時加班費": 0,
+        "46小時內加班時數": 0.0,
+        "46小時內加班費": 0,
+        "46小時內國定假日加班時數": 0.0,
+        "46小時內國定假日加班費": 0,
+        "超出46小時前2小時時數": 0.0,
+        "超出46小時後2小時時數": 0.0,
+        "超出46小時前2小時加班費": 0,
+        "超出46小時後2小時加班費": 0,
+        "超出46小時加班時數": 0.0,
+        "超出46小時加班費": 0,
+        "超出46小時國定假日加班時數": 0.0,
+        "超出46小時國定假日加班費": 0,
+    }
+
+    used_hours = 0.0
+
+    for _, drow in daily_df.iterrows():
+        day_ot = to_number(drow.get("加班時數 / Giờ tăng ca", 0))
+        day_pay = to_number(drow.get("加班費 / Tiền tăng ca", 0))
+        is_holiday = str(drow.get("國定假日 / Ngày lễ", "")).startswith("是")
+
+        if day_ot <= 0:
+            continue
+
+        remaining_under46 = max(46 - used_hours, 0)
+        put_under46 = min(day_ot, remaining_under46)
+        put_over46 = day_ot - put_under46
+
+        if is_holiday:
+            # 依你的規則：只要該員工總加班超過46小時，國定假日全部放到超出46小時國定假日。
+            if total_ot > 46:
+                result["超出46小時國定假日加班時數"] += day_ot
+                result["超出46小時國定假日加班費"] += day_pay
+            else:
+                result["46小時內國定假日加班時數"] += day_ot
+                result["46小時內國定假日加班費"] += day_pay
+        else:
+            day_first2 = min(day_ot, 2)
+            day_after2 = max(day_ot - 2, 0)
+
+            first2_under = min(day_first2, put_under46)
+            first2_over = day_first2 - first2_under
+
+            remaining_put_under46 = put_under46 - first2_under
+            after2_under = min(day_after2, remaining_put_under46)
+            after2_over = day_after2 - after2_under
+
+            result["46小時內前2小時時數"] += first2_under
+            result["46小時內後2小時時數"] += after2_under
+            result["超出46小時前2小時時數"] += first2_over
+            result["超出46小時後2小時時數"] += after2_over
+
+            result["46小時內前2小時加班費"] += round(first2_under * hourly * 1.34)
+            result["46小時內後2小時加班費"] += round(after2_under * hourly * 1.67)
+            result["超出46小時前2小時加班費"] += round(first2_over * hourly * 1.34)
+            result["超出46小時後2小時加班費"] += round(after2_over * hourly * 1.67)
+
+        used_hours += day_ot
+
+    result["46小時內加班時數"] = result["46小時內前2小時時數"] + result["46小時內後2小時時數"]
+    result["46小時內加班費"] = result["46小時內前2小時加班費"] + result["46小時內後2小時加班費"]
+    result["超出46小時加班時數"] = result["超出46小時前2小時時數"] + result["超出46小時後2小時時數"]
+    result["超出46小時加班費"] = result["超出46小時前2小時加班費"] + result["超出46小時後2小時加班費"]
+    result["加班費總計"] = (
+        result["46小時內加班費"]
+        + result["46小時內國定假日加班費"]
+        + result["超出46小時加班費"]
+        + result["超出46小時國定假日加班費"]
+    )
+    return result
+
+
+def split_from_saved_row(row):
+    """總表顯示用：優先讀取已儲存的拆分欄位；舊資料沒有欄位時用總數簡易補值。"""
+    split_cols = [
+        "46小時內前2小時時數", "46小時內後2小時時數", "46小時內前2小時加班費", "46小時內後2小時加班費",
+        "46小時內加班時數", "46小時內加班費", "46小時內國定假日加班時數", "46小時內國定假日加班費",
+        "超出46小時前2小時時數", "超出46小時後2小時時數", "超出46小時前2小時加班費", "超出46小時後2小時加班費",
+        "超出46小時加班時數", "超出46小時加班費", "超出46小時國定假日加班時數", "超出46小時國定假日加班費", "加班費總計"
+    ]
+    if any(col in row.index and str(row.get(col, "")) != "" for col in split_cols):
+        return {col: to_number(row.get(col, 0)) for col in split_cols}
+
+    total_ot = to_number(row.get("加班總時數", row.get("加班時數", 0)))
+    total_pay = to_number(row.get("加班費總計", row.get("加班費", 0)))
+    holiday_ot = to_number(row.get("國定假日總時數", 0))
+    holiday_pay = to_number(row.get("國定假日加班費", 0))
+    normal_ot = max(total_ot - holiday_ot, 0)
+    normal_pay = max(total_pay - holiday_pay, 0)
+
+    result = {col: 0 for col in split_cols}
+    if total_ot > 46:
+        result["超出46小時國定假日加班時數"] = holiday_ot
+        result["超出46小時國定假日加班費"] = holiday_pay
+    else:
+        result["46小時內國定假日加班時數"] = holiday_ot
+        result["46小時內國定假日加班費"] = holiday_pay
+
+    result["46小時內加班時數"] = min(normal_ot, 46)
+    result["超出46小時加班時數"] = max(normal_ot - 46, 0)
+    result["46小時內加班費"] = min(normal_pay, total_pay)
+    result["超出46小時加班費"] = max(normal_pay - result["46小時內加班費"], 0)
+    result["加班費總計"] = total_pay
+    return result
+
 st.subheader("薪資結果 / Kết quả lương")
 st.write(f"員工姓名 / Họ tên：{name}")
 st.write(f"單位 / Đơn vị：{company}")
@@ -497,7 +622,14 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
     st.write(holiday_rows)
 
     
-    save_data = pd.DataFrame([{
+    split_result = split_overtime_by_day(df, base_salary)
+    total_split_ot_pay = split_result["加班費總計"]
+    other_deduct_for_save = arc_fee + agency_fee + medical_fee + income_tax
+    total_deduct_for_save = total_leave_deduct + labor_insurance + health_insurance + other_deduct_for_save
+    should_receive_for_save = base_salary + total_split_ot_pay + night_allowance_total
+    final_salary_for_save = should_receive_for_save - total_deduct_for_save
+
+    save_row = {
         "年月": f"{year}-{month:02d}",
         "姓名": name,
         "單位": company,
@@ -508,6 +640,7 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         "加班費": total_ot_pay,
         "國定假日總時數": holiday_total_hours,
         "國定假日加班費": holiday_total_pay,
+        **split_result,
         "大夜班津貼": night_allowance_total,
         "請假扣款": total_leave_deduct,
         "勞保": labor_insurance,
@@ -516,203 +649,50 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
         "仲介費": agency_fee,
         "體檢費": medical_fee,
         "所得稅": income_tax,
-        "應領": base_salary + total_ot_pay + night_allowance_total,
-        "實發薪資": final_salary
-    }])
+        "其他扣款": other_deduct_for_save,
+        "扣款總計": total_deduct_for_save,
+        "應領": round(should_receive_for_save),
+        "實發薪資": round(final_salary_for_save)
+    }
+    save_data = pd.DataFrame([save_row])
 
     save_data = save_salary_record(save_data)
 
     st.write("目前總表筆數：", len(save_data))
     st.success("薪資資料已儲存成功！")
 
-    group_1 = [
-    "邱是傑",
-    "阮功聰",
-    "阮文善",
-    "阮氏越",
-    "陽功福",
-    "阮庭香",
-    "嚴鄧新",
-    "阮進當",
-]
 
-group_2 = [
-    "阮氏環",
-    "阮氏垂玲",
-    "黎文英",
-    "周氏春年",
-    "阮氏草兒",
-]
-
-group_3 = [
-    "杜氏莊",
-    "阮氏藍",
-    "范玉遍",
-    "陳文誠",
-    "廖氏清心",
-    "黃文雄",
-    "范氏玉",
-    "阮氏鶯",
-    "陳氏蓮",
-    "陳氏璧玉",
-    "阮德倫",
-    "范玉成",
-    "阮氏演",
-    "黃強雄",
-    "裴德善",
-]
-
-def get_group(employee_name):
-    if employee_name in group_1:
-        return "巴恩斯-第一組"
-    elif employee_name in group_2:
-        return "巴恩斯-第二組"
-    elif employee_name in group_3:
-        return "巴恩斯-第三組"
-    else:
-        return "未分組"
-    group_1 = [
-    "邱是傑",
-    "阮功聰",
-    "阮文善",
-    "阮氏越",
-    "陽功福",
-    "阮庭香",
-    "嚴鄧新",
-    "阮進當",
-]
-
-group_2 = [
-    "阮氏環",
-    "阮氏垂玲",
-    "黎文英",
-    "周氏春年",
-    "阮氏草兒",
-]
-
-group_3 = [
-    "杜氏莊",
-    "阮氏藍",
-    "范玉遍",
-    "陳文誠",
-    "廖氏清心",
-    "黃文雄",
-    "范氏玉",
-    "阮氏鶯",
-    "陳氏蓮",
-    "陳氏璧玉",
-    "阮德倫",
-    "范玉成",
-    "阮氏演",
-    "黃強雄",
-    "裴德善",
-]
-
-def get_group(employee_name):
-    if employee_name in group_1:
-        return "巴恩斯-第一組"
-    elif employee_name in group_2:
-        return "巴恩斯-第二組"
-    elif employee_name in group_3:
-        return "巴恩斯-第三組"
-    else:
-        return "未分組"
-group_1 = [
-    "邱是傑",
-    "阮功聰",
-    "阮文善",
-    "阮氏越",
-    "陽功福",
-    "阮庭香",
-    "嚴鄧新",
-    "阮進當",
-]
-
-group_2 = [
-    "阮氏環",
-    "阮氏垂玲",
-    "黎文英",
-    "周氏春年",
-    "阮氏草兒",
-]
-
-group_3 = [
-    "杜氏莊",
-    "阮氏藍",
-    "范玉遍",
-    "陳文誠",
-    "廖氏清心",
-    "黃文雄",
-    "范氏玉",
-    "阮氏鶯",
-    "陳氏蓮",
-    "陳氏璧玉",
-    "阮德倫",
-    "范玉成",
-    "阮氏演",
-    "黃強雄",
-    "裴德善",
-]
 # ===== 巴恩斯分組 =====
-
 group_1 = [
-    "邱是傑",
-    "阮功聰",
-    "阮文善",
-    "阮氏越",
-    "陽功福",
-    "阮庭香",
-    "嚴鄧新",
-    "阮進當"
+    "邱是傑", "阮功聰", "阮文善", "阮氏越", "陽功福", "阮庭香", "嚴鄧新", "阮進當"
 ]
 
 group_2 = [
-    "阮氏環",
-    "阮氏垂玲",
-    "黎文英",
-    "周氏春年",
-    "阮氏草兒"
+    "阮氏環", "阮氏垂玲", "黎文英", "周氏春年", "阮氏草兒"
 ]
 
 group_3 = [
-    "杜氏莊",
-    "阮氏藍",
-    "范玉遍",
-    "陳文誠",
-    "廖氏清心",
-    "黃文雄",
-    "范氏玉",
-    "阮氏鶯",
-    "陳氏蓮",
-    "陳氏璧玉",
-    "阮德倫",
-    "范玉成",
-    "阮氏演",
-    "黃強雄",
-    "裴德善"
+    "杜氏莊", "阮氏藍", "范玉遍", "陳文誠", "廖氏清心", "黃文雄", "范氏玉", "阮氏鶯",
+    "陳氏蓮", "陳氏璧玉", "阮德倫", "范玉成", "阮氏演", "黃強雄", "裴德善"
 ]
 
 def get_group(employee_name):
     if employee_name in group_1:
         return "巴恩斯-第一組"
-    elif employee_name in group_2:
+    if employee_name in group_2:
         return "巴恩斯-第二組"
-    elif employee_name in group_3:
+    if employee_name in group_3:
         return "巴恩斯-第三組"
-    else:
-        return "未分組"
+    return "未分組"
 
 
 # ===== 所有員工薪資總表 =====
-
 st.subheader("所有員工薪資總表")
 
 history_df = read_salary_records()
-history_df.columns = history_df.columns.astype(str).str.strip()
-
 
 if len(history_df) > 0:
-
+    history_df.columns = history_df.columns.astype(str).str.strip()
     history_df["分組"] = history_df["姓名"].apply(get_group)
 
     unit_filter = st.selectbox(
@@ -729,311 +709,142 @@ if len(history_df) > 0:
 
     month_filter = st.selectbox(
         "月份篩選",
-        ["全部"] + sorted(history_df["年月"].astype(str).unique().tolist())
+        ["全部"] + sorted(history_df["年月"].astype(str).unique().tolist()),
+        index=0
     )
 
     summary_df = history_df.copy()
 
     if unit_filter != "全部":
-        summary_df = summary_df[
-            summary_df["單位"] == unit_filter
-        ]
+        summary_df = summary_df[summary_df["單位"] == unit_filter]
 
     if group_filter != "全部":
-        summary_df = summary_df[
-            summary_df["分組"] == group_filter
-        ]
+        summary_df = summary_df[summary_df["分組"] == group_filter]
 
     if month_filter != "全部":
-        summary_df = summary_df[
-            summary_df["年月"].astype(str) == month_filter
-        ]
-    st.write("history_df筆數：", len(history_df))
-    st.write("summary_df筆數：", len(summary_df))
-    st.write(summary_df[["年月", "姓名", "單位", "分組"]])
-    
+        summary_df = summary_df[summary_df["年月"].astype(str) == month_filter]
+
     formatted_rows = []
-formatted_rows = []
 
-for _, row in summary_df.iterrows():
-    total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
-    total_pay = float(row.get("加班費總計", row.get("加班費", 0)) or 0)
-
-    holiday_ot = float(row.get("國定假日總時數", 0) or 0)
-    holiday_pay = float(row.get("國定假日加班費", 0) or 0)
-
-    normal_ot = max(total_ot - holiday_ot, 0)
-    normal_pay = max(total_pay - holiday_pay, 0)
-
-    normal_under_46 = min(normal_ot, 46)
-    normal_over_46 = max(normal_ot - 46, 0)
-
-    # 如果總加班超過46小時，國定假日一律放超出46小時
-    if total_ot > 46:
-        holiday_under_46 = 0
-        holiday_under_46_pay = 0
-        holiday_over_46 = holiday_ot
-        holiday_over_46_pay = holiday_pay
-    else:
-        holiday_under_46 = holiday_ot
-        holiday_under_46_pay = holiday_pay
-        holiday_over_46 = 0
-        holiday_over_46_pay = 0
-
-    monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
-    hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
-
-    
     for _, row in summary_df.iterrows():
-        total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
-    
-        monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
-        hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
-    
-        under46_first2_hours = 0
-        under46_after2_hours = 0
-        under46_first2_pay = 0
-        under46_after2_pay = 0
-    
-        under46_holiday_hours = 0
-        under46_holiday_pay = 0
-    
-        over46_first2_hours = 0
-        over46_after2_hours = 0
-        over46_first2_pay = 0
-        over46_after2_pay = 0
-    
-        over46_holiday_hours = 0
-        over46_holiday_pay = 0
-    
-        used_hours = 0
-    
-        for _, drow in df.iterrows():
-            day_ot = float(drow.get("加班時數 / Giờ tăng ca", 0) or 0)
-            day_pay = float(drow.get("加班費 / Tiền tăng ca", 0) or 0)
-            is_holiday = str(drow.get("國定假日 / Ngày lễ", "")).startswith("是")
-    
-            if day_ot <= 0:
-                continue
-    
-            remaining_under46 = max(46 - used_hours, 0)
-            put_under46 = min(day_ot, remaining_under46)
-            put_over46 = day_ot - put_under46
-    
-            if is_holiday:
-                # 國定假日：如果加班總時數超過46，全部放超出46小時國定假日
-                if total_ot > 46:
-                    over46_holiday_hours += day_ot
-                    over46_holiday_pay += day_pay
-                else:
-                    under46_holiday_hours += day_ot
-                    under46_holiday_pay += day_pay
-            else:
-                # 一般加班：每日前2小時、後2小時
-                day_first2 = min(day_ot, 2)
-                day_after2 = max(day_ot - 2, 0)
-    
-                # 先把前2小時分到46小時內，不夠再分到超出46
-                first2_under = min(day_first2, put_under46)
-                first2_over = day_first2 - first2_under
-    
-                remaining_put_under46 = put_under46 - first2_under
-    
-                after2_under = min(day_after2, remaining_put_under46)
-                after2_over = day_after2 - after2_under
-    
-                under46_first2_hours += first2_under
-                under46_after2_hours += after2_under
-                over46_first2_hours += first2_over
-                over46_after2_hours += after2_over
-    
-                under46_first2_pay += round(first2_under * hourly_wage * 1.34)
-                under46_after2_pay += round(after2_under * hourly_wage * 1.67)
-                over46_first2_pay += round(first2_over * hourly_wage * 1.34)
-                over46_after2_pay += round(after2_over * hourly_wage * 1.67)
-    
-            used_hours += day_ot
-    
-        normal_under_46 = under46_first2_hours + under46_after2_hours
-        normal_under_46_pay = under46_first2_pay + under46_after2_pay
-    
-        normal_over_46 = over46_first2_hours + over46_after2_hours
-        normal_over_46_pay = over46_first2_pay + over46_after2_pay
-    
-        total_split_ot_pay = (
-            normal_under_46_pay
-            + under46_holiday_pay
-            + normal_over_46_pay
-            + over46_holiday_pay
-        )
-    
-        other_deduct = (
-            float(row.get("居留證", 0) or 0)
-            + float(row.get("仲介費", 0) or 0)
-            + float(row.get("體檢費", 0) or 0)
-            + float(row.get("所得稅", 0) or 0)
-        )
-    
-        total_deduct = (
-            float(row.get("請假扣款", 0) or 0)
-            + float(row.get("勞保", 0) or 0)
-            + float(row.get("健保", 0) or 0)
-            + other_deduct
-        )
-    
-        should_receive = monthly_salary + total_split_ot_pay + float(row.get("大夜班津貼", 0) or 0)
+        monthly_salary = to_number(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))))
+        split_result = split_from_saved_row(row)
+
+        total_ot = to_number(row.get("加班總時數", row.get("加班時數", 0)))
+        if total_ot == 0:
+            total_ot = (
+                split_result["46小時內加班時數"]
+                + split_result["46小時內國定假日加班時數"]
+                + split_result["超出46小時加班時數"]
+                + split_result["超出46小時國定假日加班時數"]
+            )
+
+        ot_pay_total = split_result.get("加班費總計", to_number(row.get("加班費", 0)))
+        night_pay = to_number(row.get("大夜班津貼", 0))
+        leave_deduct = to_number(row.get("請假扣款", 0))
+        labor = to_number(row.get("勞保", 0))
+        health = to_number(row.get("健保", 0))
+        arc = to_number(row.get("居留證", 0))
+        agency = to_number(row.get("仲介費", 0))
+        medical = to_number(row.get("體檢費", 0))
+        tax = to_number(row.get("所得稅", 0))
+        other_deduct = arc + agency + medical + tax
+        total_deduct = leave_deduct + labor + health + other_deduct
+        should_receive = monthly_salary + ot_pay_total + night_pay
         final_pay = should_receive - total_deduct
-    
+
         one_row = {
-            "年月": row["年月"],
-            "姓名": row["姓名"],
-            "單位": row["單位"],
-            "分組": row["分組"],
+            "年月": row.get("年月", ""),
+            "姓名": row.get("姓名", ""),
+            "單位": row.get("單位", ""),
+            "分組": row.get("分組", ""),
             "月薪": monthly_salary,
-    
-            "46小時內前2小時時數": under46_first2_hours,
-            "46小時內後2小時時數": under46_after2_hours,
-            "46小時內前2小時加班費": under46_first2_pay,
-            "46小時內後2小時加班費": under46_after2_pay,
-    
-            "46小時內加班時數": normal_under_46,
-            "46小時內加班費": normal_under_46_pay,
-    
-            "46小時內國定假日加班時數": under46_holiday_hours,
-            "46小時內國定假日加班費": under46_holiday_pay,
-    
-            "超出46小時前2小時時數": over46_first2_hours,
-            "超出46小時後2小時時數": over46_after2_hours,
-            "超出46小時前2小時加班費": over46_first2_pay,
-            "超出46小時後2小時加班費": over46_after2_pay,
-    
-            "超出46小時加班時數": normal_over_46,
-            "超出46小時加班費": normal_over_46_pay,
-    
-            "超出46小時國定假日加班時數": over46_holiday_hours,
-            "超出46小時國定假日加班費": over46_holiday_pay,
-    
+            **split_result,
             "加班總時數": total_ot,
-            "加班費總計": total_split_ot_pay,
-            "大夜班津貼": row.get("大夜班津貼", 0),
-            "請假扣款": row.get("請假扣款", 0),
-            "勞保": row.get("勞保", 0),
-            "健保": row.get("健保", 0),
-            "居留證": row.get("居留證", 0),
-            "仲介費": row.get("仲介費", 0),
-            "體檢費": row.get("體檢費", 0),
-            "所得稅": row.get("所得稅", 0),
+            "加班費總計": ot_pay_total,
+            "大夜班津貼": night_pay,
+            "請假扣款": leave_deduct,
+            "勞保": labor,
+            "健保": health,
+            "居留證": arc,
+            "仲介費": agency,
+            "體檢費": medical,
+            "所得稅": tax,
+            "其他扣款": other_deduct,
+            "扣款總計": total_deduct,
             "應領": round(should_receive),
             "實發薪資": round(final_pay),
         }
-    
         formatted_rows.append(one_row)
-        
+
     formatted_df = pd.DataFrame(formatted_rows)
-        
-    
+
     st.table(formatted_df)
 
-# 下載薪資總表 Excel
-complex_excel = "薪資總表.xlsx"
-formatted_df.to_excel(complex_excel, index=False)
+    complex_excel = "薪資總表.xlsx"
+    formatted_df.to_excel(complex_excel, index=False)
 
-with open(complex_excel, "rb") as file:
-    st.download_button(
-        label="下載薪資總表 Excel",
-        data=file,
-        file_name="薪資總表.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="download_complex_salary"
-    )
+    with open(complex_excel, "rb") as file:
+        st.download_button(
+            label="下載薪資總表 Excel",
+            data=file,
+            file_name="薪資總表.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_complex_salary"
+        )
 
-# 簡化版總表
-st.subheader("簡化版總表")
+    # ===== 簡化版總表 =====
+    st.subheader("簡化版總表")
 
-simple_cols = [
-    "年月", "姓名", "單位", "分組", "月薪",
+    simple_cols = [
+        "年月", "姓名", "單位", "分組", "月薪",
+        "加班總時數", "加班費總計",
+        "大夜班津貼", "請假扣款", "勞保", "健保",
+        "其他扣款", "扣款總計", "應領", "實發薪資"
+    ]
 
-    "加班總時數",
-    "加班費總計",
-    
-    "國定假日總時數",
-    "國定假日加班費",
+    simple_cols = [c for c in simple_cols if c in formatted_df.columns]
+    simple_df = formatted_df[simple_cols]
 
-    "大夜班津貼",
-    
-    "請假扣款",
-    "勞保",
-    "健保",
-    "其他扣款",
-    "扣款總計",
-    "應領",
-    "實發薪資"
-]
+    st.table(simple_df)
 
-simple_cols = [c for c in simple_cols if c in formatted_df.columns]
-simple_df = formatted_df[simple_cols]
+    simple_excel = "簡化版薪資總表.xlsx"
+    simple_df.to_excel(simple_excel, index=False)
 
-st.table(simple_df)
+    with open(simple_excel, "rb") as file:
+        st.download_button(
+            label="下載簡化版總表 Excel",
+            data=file,
+            file_name="簡化版薪資總表.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_simple_salary"
+        )
 
-simple_excel = "簡化版薪資總表.xlsx"
-simple_df.to_excel(simple_excel, index=False)
+    # ===== 刪除總表紀錄 =====
+    st.subheader("刪除總表紀錄")
 
-with open(simple_excel, "rb") as file:
-    st.download_button(
-        label="下載簡化版總表 Excel",
-        data=file,
-        file_name="簡化版薪資總表.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="download_simple_salary"
-    )
+    delete_options = [
+        f"{idx} | {row['年月']} | {row['姓名']} | 實發 {row['實發薪資']}"
+        for idx, row in summary_df.iterrows()
+    ]
 
+    if len(delete_options) > 0:
+        delete_choice = st.selectbox(
+            "選擇要刪除的紀錄",
+            delete_options,
+            key="delete_salary_record_select"
+        )
 
+        if st.button("刪除選取紀錄", key="delete_salary_record_btn"):
+            selected_index = int(delete_choice.split("|")[0].strip())
+            new_data = history_df.drop(index=selected_index).reset_index(drop=True)
 
+            sheet.clear()
+            if len(new_data) > 0:
+                new_data = new_data.fillna("").replace([float("inf"), float("-inf")], "")
+                sheet.update([new_data.columns.tolist()] + new_data.astype(str).values.tolist())
 
-# 下載完整薪資總表 Excel
-complex_excel = "complex_salary_summary.xlsx"
-formatted_df.to_excel(complex_excel, index=False)
-
-with open(complex_excel, "rb") as file:
-    st.download_button(
-        label="下載薪資總表 Excel",
-        data=file,
-        file_name="薪資總表.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="download_complex_salary_final"
-    )
-
-
-# 刪除總表紀錄
-st.subheader("刪除總表紀錄")
-
-delete_options = [
-    f"{idx} | {row['年月']} | {row['姓名']} | 實發 {row['實發薪資']}"
-    for idx, row in summary_df.iterrows()
-]
-
-if len(delete_options) > 0:
-    delete_choice = st.selectbox(
-        "選擇要刪除的紀錄",
-        delete_options,
-        key="delete_salary_record_select"
-    )
-
-    if st.button("刪除選取紀錄", key="delete_salary_record_btn"):
-
-        selected_index = int(delete_choice.split("|")[0].strip())
-
-        new_data = history_df.drop(index=selected_index)
-        new_data = new_data.reset_index(drop=True)
-
-        sheet.clear()
-
-        if len(new_data) > 0:
-            sheet.update(
-                [new_data.columns.tolist()] + new_data.values.tolist()
-            )
-
-        st.success("已刪除紀錄")
-        st.rerun()
+            st.success("已刪除紀錄")
+            st.rerun()
 else:
     st.info("目前還沒有薪資紀錄，請先儲存薪資資料。")
