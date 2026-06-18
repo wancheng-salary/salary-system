@@ -321,13 +321,24 @@ def split_overtime_by_day(daily_df, monthly_salary):
         put_over46 = day_ot - put_under46
 
         if is_holiday:
-            # 依你的規則：只要該員工總加班超過46小時，國定假日全部放到超出46小時國定假日。
-            if total_ot > 46:
-                result["超出46小時國定假日加班時數"] += day_ot
-                result["超出46小時國定假日加班費"] += day_pay
+
+           under_holiday = min(day_ot, remaining_under46)
+           over_holiday = day_ot - under_holiday
+
+            if day_ot > 0:
+                under_pay = round(day_pay * under_holiday / day_ot)
             else:
-                result["46小時內國定假日加班時數"] += day_ot
-                result["46小時內國定假日加班費"] += day_pay
+                under_pay = 0
+
+            over_pay = day_pay - under_pay
+
+            result["46小時內國定假日加班時數"] += under_holiday
+            result["46小時內國定假日加班費"] += under_pay
+
+            result["超出46小時國定假日加班時數"] += over_holiday
+            result["超出46小時國定假日加班費"] += over_pay
+
+            used_hours += day_ot   
         else:
             day_first2 = min(day_ot, 2)
             day_after2 = max(day_ot - 2, 0)
