@@ -325,9 +325,9 @@ def split_overtime_by_day(daily_df, monthly_salary):
            under_holiday = min(day_ot, remaining_under46)
            over_holiday = day_ot - under_holiday
 
-            if day_ot > 0:
+           if day_ot > 0:
                 under_pay = round(day_pay * under_holiday / day_ot)
-            else:
+           else:
                 under_pay = 0
 
             over_pay = day_pay - under_pay
