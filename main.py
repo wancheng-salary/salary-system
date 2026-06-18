@@ -784,30 +784,29 @@ for _, row in summary_df.iterrows():
     hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
 
     
-
-        for _, row in summary_df.iterrows():
-            total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
+    for _, row in summary_df.iterrows():
+        total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
     
-            monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
-            hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
+        monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
+        hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
     
-            under46_first2_hours = 0
-            under46_after2_hours = 0
-            under46_first2_pay = 0
-            under46_after2_pay = 0
+        under46_first2_hours = 0
+        under46_after2_hours = 0
+        under46_first2_pay = 0
+        under46_after2_pay = 0
     
-            under46_holiday_hours = 0
-            under46_holiday_pay = 0
+        under46_holiday_hours = 0
+        under46_holiday_pay = 0
     
-            over46_first2_hours = 0
-            over46_after2_hours = 0
-            over46_first2_pay = 0
-            over46_after2_pay = 0
+        over46_first2_hours = 0
+        over46_after2_hours = 0
+        over46_first2_pay = 0
+        over46_after2_pay = 0
     
-            over46_holiday_hours = 0
-            over46_holiday_pay = 0
+        over46_holiday_hours = 0
+        over46_holiday_pay = 0
     
-            used_hours = 0
+        used_hours = 0
     
         for _, drow in df.iterrows():
             day_ot = float(drow.get("加班時數 / Giờ tăng ca", 0) or 0)
