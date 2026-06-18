@@ -618,8 +618,6 @@ if st.button("儲存薪資紀錄 / Lưu dữ liệu lương"):
     holiday_total_hours = holiday_rows[ot_col].sum()
     holiday_total_pay = holiday_rows[pay_col].sum()
 
-    st.write(df.columns.tolist())
-    st.write(holiday_rows)
 
     
     split_result = split_overtime_by_day(df, base_salary)
