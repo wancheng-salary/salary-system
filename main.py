@@ -757,19 +757,18 @@ formatted_rows = []
 
 for _, row in summary_df.iterrows():
     total_ot = float(row.get("加班總時數", row.get("加班時數", 0)) or 0)
+    total_pay = float(row.get("加班費總計", row.get("加班費", 0)) or 0)
 
     holiday_ot = float(row.get("國定假日總時數", 0) or 0)
-
     holiday_pay = float(row.get("國定假日加班費", 0) or 0)
 
-    
-
     normal_ot = max(total_ot - holiday_ot, 0)
-    normal_pay = row.get("加班費", 0) - holiday_pay
+    normal_pay = max(total_pay - holiday_pay, 0)
 
     normal_under_46 = min(normal_ot, 46)
     normal_over_46 = max(normal_ot - 46, 0)
 
+    # 如果總加班超過46小時，國定假日一律放超出46小時
     if total_ot > 46:
         holiday_under_46 = 0
         holiday_under_46_pay = 0
@@ -782,23 +781,60 @@ for _, row in summary_df.iterrows():
         holiday_over_46_pay = 0
 
     monthly_salary = float(row.get("月薪", row.get("底薪", row.get("基本薪資", 0))) or 0)
-    hourly_wage = monthly_salary / 30 / 8
+    hourly_wage = monthly_salary / 30 / 8 if monthly_salary else 0
 
-    normal_over_46_pay = round(normal_over_46 * hourly_wage * 1.67)
-    normal_under_46_pay = normal_pay - normal_over_46_pay
+    # 依每日加班前2小時、後2小時計算
+    under46_first2_hours = 0
+    under46_after2_hours = 0
+    over46_first2_hours = 0
+    over46_after2_hours = 0
 
+    remaining_under46 = normal_under_46
+
+    for _, drow in df.iterrows():
+        if str(drow.get("國定假日 / Ngày lễ", "")).startswith("是"):
+            continue
+
+        day_ot = float(drow.get("加班時數 / Giờ tăng ca", 0) or 0)
+
+        day_first2 = min(day_ot, 2)
+        day_after2 = max(day_ot - 2, 0)
+
+        # 先分配到46小時內
+        use_first2_under = min(day_first2, remaining_under46)
+        under46_first2_hours += use_first2_under
+        remaining_under46 -= use_first2_under
+
+        left_first2 = day_first2 - use_first2_under
+        over46_first2_hours += left_first2
+
+        use_after2_under = min(day_after2, remaining_under46)
+        under46_after2_hours += use_after2_under
+        remaining_under46 -= use_after2_under
+
+        left_after2 = day_after2 - use_after2_under
+        over46_after2_hours += left_after2
+
+    under46_first2_pay = round(under46_first2_hours * hourly_wage * 1.34)
+    under46_after2_pay = round(under46_after2_hours * hourly_wage * 1.67)
+
+    over46_first2_pay = round(over46_first2_hours * hourly_wage * 1.34)
+    over46_after2_pay = round(over46_after2_hours * hourly_wage * 1.67)
+
+    normal_under_46_pay = under46_first2_pay + under46_after2_pay
+    normal_over_46_pay = over46_first2_pay + over46_after2_pay
 
     other_deduct = (
-        row["居留證"]
-        + row["仲介費"]
-        + row["體檢費"]
-        + row["所得稅"]
+        float(row.get("居留證", 0) or 0)
+        + float(row.get("仲介費", 0) or 0)
+        + float(row.get("體檢費", 0) or 0)
+        + float(row.get("所得稅", 0) or 0)
     )
 
     total_deduct = (
-        row["請假扣款"]
-        + row["勞保"]
-        + row["健保"]
+        float(row.get("請假扣款", 0) or 0)
+        + float(row.get("勞保", 0) or 0)
+        + float(row.get("健保", 0) or 0)
         + other_deduct
     )
 
@@ -808,25 +844,42 @@ for _, row in summary_df.iterrows():
         "單位": row["單位"],
         "分組": row["分組"],
         "月薪": monthly_salary,
+
+        "46小時內前2小時時數": under46_first2_hours,
+        "46小時內後2小時時數": under46_after2_hours,
+        "46小時內前2小時加班費": under46_first2_pay,
+        "46小時內後2小時加班費": under46_after2_pay,
+
         "46小時內加班時數": normal_under_46,
         "46小時內加班費": normal_under_46_pay,
+
         "46小時內國定假日加班時數": holiday_under_46,
         "46小時內國定假日加班費": holiday_under_46_pay,
+
+        "超出46小時前2小時時數": over46_first2_hours,
+        "超出46小時後2小時時數": over46_after2_hours,
+        "超出46小時前2小時加班費": over46_first2_pay,
+        "超出46小時後2小時加班費": over46_after2_pay,
+
         "超出46小時加班時數": normal_over_46,
         "超出46小時加班費": normal_over_46_pay,
+
         "超出46小時國定假日加班時數": holiday_over_46,
         "超出46小時國定假日加班費": holiday_over_46_pay,
+
         "加班總時數": total_ot,
-        "加班費總計": row["加班費"],
-        "大夜班津貼": row["大夜班津貼"],
-        "請假扣款": row["請假扣款"],
-        "勞保": row["勞保"],
-        "健保": row["健保"],
-        "其他扣款": other_deduct,
-        "扣款總計": total_deduct,
-        "應領": row["應領"],
-        "實發薪資": row["實發薪資"]
-    }  
+        "加班費總計": total_pay,
+        "大夜班津貼": row.get("大夜班津貼", 0),
+        "請假扣款": row.get("請假扣款", 0),
+        "勞保": row.get("勞保", 0),
+        "健保": row.get("健保", 0),
+        "居留證": row.get("居留證", 0),
+        "仲介費": row.get("仲介費", 0),
+        "體檢費": row.get("體檢費", 0),
+        "所得稅": row.get("所得稅", 0),
+        "應領": row.get("應領", 0),
+        "實發薪資": row.get("實發薪資", 0),
+    }
 
     formatted_rows.append(one_row)
     
