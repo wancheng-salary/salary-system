@@ -338,7 +338,6 @@ def split_overtime_by_day(daily_df, monthly_salary):
             result["超出46小時國定假日加班時數"] += over_holiday
             result["超出46小時國定假日加班費"] += over_pay
 
-            used_hours += day_ot   
         else:
             day_first2 = min(day_ot, 2)
             day_after2 = max(day_ot - 2, 0)
